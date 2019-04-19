@@ -1,0 +1,372 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+enum PlayerState {
+	Star,
+	Morphing,
+	Circle,
+}
+
+enum Angle : byte {
+	UpperLeft = 1,
+	Up = 2,
+	UpperRight = 4,
+	Right = 8,
+	DownerRight = 16,
+	Down = 32,
+	DownerLeft = 64,
+	Left = 128,
+}
+
+public class Player : MonoBehaviour {
+
+	public PlayerStatus StarStatus;
+	public PlayerStatus CircleStatus;
+	public float MorphSpeed = 1;
+	public float ChargeSpeed = 1;
+	public float MaxChargePower = 500;
+	public float AttackWaitTime = 0.3f;
+
+	public Collider2D AttackCollider;
+	public ParticleSystem MoveEffect;
+	public ParticleSystem JumpEffect;
+	public ParticleSystem AttackEffect;
+
+	private Animator _animator;
+	private Rigidbody2D _rig;
+	private ParticleSystem _moveEffect;
+	private Transform _eye;
+	private Transform _body;
+
+	private Vector2 _moveVec;
+	private bool _isDash = false;
+	private bool _isGround = false;
+	private PlayerStatus _currentStatus;
+	private PlayerState _state;
+
+	private float _speed = 0;
+	private Angle _gravityDirection = Angle.Down;
+	private byte _ground = 0;
+	private float _morph = 0;
+	private float _gravity = 9.81f;
+	private float _attackWait = 0;
+
+	private void Start() {
+
+		AttackCollider.enabled = false;
+
+		_animator = GetComponent<Animator>();
+		_rig = GetComponent<Rigidbody2D>();
+		_moveEffect = Instantiate(MoveEffect, transform.position, transform.rotation);
+		_moveEffect.transform.SetParent(transform);
+		_eye = transform.Find("Eye");
+		_body = transform.Find("Body");
+
+		_currentStatus = ScriptableObject.CreateInstance<PlayerStatus>();
+		_currentStatus.Material = new PhysicsMaterial2D("CurrentMat");
+
+		Morph(0);
+
+		_state = PlayerState.Star;
+
+	}
+
+	// Update is called once per frame
+	private void Update () {
+
+		CheckBlockSide();
+
+		if(CheckCanAttack() && Input.GetButtonDown("Attack")) {
+			Attack();
+			_attackWait = AttackWaitTime;
+		}
+
+		var morph = _morph;
+		morph += (Input.GetButton("Morph") ? 1 : -1) * Time.deltaTime * MorphSpeed;
+		morph = Mathf.Clamp(morph, 0, 1);
+		if(morph != _morph) {
+
+			if(_morph == 0) {
+				// Jump
+				_rig.AddForce(ToVector(_gravityDirection) * -MaxChargePower);
+				Debug.Log(_gravityDirection);
+				var g = Instantiate(JumpEffect, transform);
+				g.transform.SetParent(null);
+				Destroy(g.gameObject, 5);
+			}
+
+			_morph = morph;
+			Morph(_morph);
+			_state = PlayerState.Morphing;
+			if(morph == 0) _state = PlayerState.Star;
+			if(morph == 1) _state = PlayerState.Circle;
+		}
+
+	}
+
+	private bool CheckCanAttack() {
+		if(_state != PlayerState.Star) return false;
+
+		_attackWait -= Time.deltaTime;
+		_attackWait = Mathf.Max(_attackWait, 0);
+
+		return _attackWait == 0;
+	}
+
+	private void FixedUpdate() {
+
+		Move();
+
+	}
+
+	private void CheckBlockSide() {
+
+		var length = 0.55f;
+		var mask = LayerMask.GetMask("Ground");
+		var checkList = new[] {
+			new Vector2(-1,  1),
+			new Vector2( 0,  1),
+			new Vector2( 1,  1),
+			new Vector2( 1,  0),
+			new Vector2( 1, -1),
+			new Vector2( 0, -1),
+			new Vector2(-1, -1),
+			new Vector2(-1,  0),
+		};
+
+		_ground = 0;
+		for(int i = 0;i < checkList.Length;i++) {
+
+			var hit = Physics2D.Raycast(transform.position, checkList[i], length, mask);
+			Color c;
+			if(hit.collider) {
+				_ground |= (byte)Mathf.Pow(2, i);
+				c = Color.green;
+			}
+			else {
+				c = Color.red;
+			}
+			Debug.DrawRay(transform.position, checkList[i].normalized * length, c);
+		}
+
+		if(_state == PlayerState.Star) _isGround = _ground > 0;
+		else _isGround = (_ground & (byte)(Angle.DownerLeft | Angle.Down | Angle.DownerRight)) > 0;
+
+	}
+
+	private void Move() {
+
+		// calc speed
+		float input = 0;
+		if(_gravityDirection == Angle.Down)
+			input = Input.GetAxisRaw("Horizontal");
+		if(_gravityDirection == Angle.Up)
+			input = -Input.GetAxisRaw("Horizontal");
+		if(_gravityDirection == Angle.Left)
+			input = -Input.GetAxisRaw("Vertical");
+		if(_gravityDirection == Angle.Right)
+			input = Input.GetAxisRaw("Vertical");
+
+		if(input != 0) _speed += input * _currentStatus.MaxAddSpeed;
+		else _speed = Mathf.MoveTowards(_speed, 0, _currentStatus.MaxSubSpeed);
+
+		if(Mathf.Abs(_speed) < _currentStatus.MaxSpeed) _isDash = false;
+
+		var maxSpeed = _isDash ? _currentStatus.MaxDashSpeed : _currentStatus.MaxSpeed;
+		_speed = Mathf.Clamp(_speed, -maxSpeed, maxSpeed);
+
+		// move and gravity
+		_moveVec = new Vector2(1, 0);
+		var old = _gravityDirection;
+		_gravityDirection = _state == PlayerState.Star ? CalcGravityDirectionAndMoveVec(input, _gravityDirection, out _moveVec) : Angle.Down;
+		if(old != _gravityDirection) _speed = SpeedConvert(_speed, old, _gravityDirection);
+
+		var vel = _rig.velocity;
+
+		// 要検討
+		var g = (Vector2)Vector3.Project(vel, ToVector(_gravityDirection));
+		var v = (Vector2)Vector3.Project(vel, _moveVec);
+
+		g += ToVector(_gravityDirection) * _gravity * Time.deltaTime; // gravity
+
+		if(v.sqrMagnitude < maxSpeed * maxSpeed) {
+			// move
+			v = _moveVec * _speed;
+		}
+		else {
+			var vn = v.normalized;
+			v -= vn * _currentStatus.MaxSubSpeed;
+		}
+		vel = g + v;
+
+		_rig.velocity = vel;
+
+		// Animation
+		_animator.SetFloat("Speed", _speed / 2);
+
+		var scale = _eye.localScale;
+		if(input > 0) scale.x = 1;
+		if(input < 0) scale.x = -1;
+		if(_gravityDirection == Angle.Up) {
+			if(input != 0) scale.x *= -1;
+			scale.y = -1;
+		}
+		else {
+			scale.y = 1;
+		}
+		_eye.localScale = scale;
+	}
+
+	private Angle CalcGravityDirectionAndMoveVec(float input, Angle currentGravity, out Vector2 moveVec) {
+
+		moveVec = new Vector2(1, 0);
+		if(_ground == 0) return Angle.Down;
+
+		System.Func<byte, int, byte> rotate = (n, count) => {
+			if(count == 0) return n;
+
+			var mul = count > 0 ? 2.0f : 0.5f;
+			for(int i = 0;i < Mathf.Abs(count);i++) {
+				var next = (n * mul);
+				if(next > 128) next = 1;
+				if(next < 1) next = 128;
+				n = (byte)next;
+			}
+
+			return n;
+		};
+
+		var current = (byte)currentGravity;
+		var vec = 0;
+		if(input < 0) vec = 1;
+		else vec = -1;
+
+		if((current & (byte)(Angle.UpperLeft | Angle.UpperRight | Angle.DownerLeft | Angle.DownerRight)) > 0) {
+			current = rotate(current, vec);
+		}
+
+		// 凹
+		for(int i = 0;i < 2;i++) {
+			current = rotate(current, vec * 2);
+			if((_ground & current) > 0) {
+				moveVec = ToVector(ToAngle(rotate(current, -2)));
+				return ToAngle(current);
+			}
+		}
+
+		Debug.Log("Calc Error");
+		moveVec = ToVector(ToAngle(rotate((byte)currentGravity, -2)));
+		return currentGravity;
+	}
+
+		private void Morph(float ratio) {
+
+		_currentStatus.Material.friction = Mathf.Lerp(StarStatus.Material.friction, CircleStatus.Material.friction, ratio);
+		_currentStatus.Material.bounciness = Mathf.Lerp(StarStatus.Material.bounciness, CircleStatus.Material.bounciness, ratio);
+
+		_currentStatus.MaxSpeed = Mathf.Lerp(StarStatus.MaxSpeed, CircleStatus.MaxSpeed, ratio);
+		_currentStatus.MaxDashSpeed = Mathf.Lerp(StarStatus.MaxDashSpeed, CircleStatus.MaxDashSpeed, ratio);
+		_currentStatus.DashPower = Mathf.Lerp(StarStatus.DashPower, CircleStatus.DashPower, ratio);
+		_currentStatus.MaxAddSpeed = Mathf.Lerp(StarStatus.MaxAddSpeed, CircleStatus.MaxAddSpeed, ratio);
+		_currentStatus.MaxSubSpeed = Mathf.Lerp(StarStatus.MaxSubSpeed, CircleStatus.MaxSubSpeed, ratio);
+		_gravity = Mathf.Lerp(StarStatus.Gravity, CircleStatus.Gravity, ratio);
+
+		_rig.sharedMaterial = _currentStatus.Material;
+
+		// Animation
+		_animator.SetFloat("Morph", ratio);
+	}
+
+	private IEnumerator MorphAnimation(PlayerState toMorph, float morphSpeed) {
+
+		if(toMorph == PlayerState.Morphing) yield break;
+		if(_state == toMorph) yield break;
+
+		_state = PlayerState.Morphing;
+
+		System.Func<PlayerState, float, float> toVec = (state, current) => {
+			switch(state) {
+				case PlayerState.Star: return 1 - current;
+				case PlayerState.Morphing: return 0;
+				case PlayerState.Circle: return current;
+				default: return 0;
+			}
+		};
+
+		var t = 0.0f;
+
+		while((t += Time.deltaTime * morphSpeed) <= 1.0f) {
+			Morph(toVec(toMorph, t));
+			yield return null;
+		}
+
+		Morph(toVec(toMorph, 1.0f));
+
+		_state = toMorph;
+
+	}
+
+	private void Attack() {
+
+		var input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")).normalized;
+
+		if(input.x > 0) {
+			_speed = _currentStatus.MaxDashSpeed;
+		}
+		else if(input.x < 0) {
+			_speed = -_currentStatus.MaxDashSpeed;
+		}
+
+		if(_gravityDirection == Angle.Up) _speed *= -1;
+
+		_rig.AddForce(input * _currentStatus.DashPower);
+		_isDash = true;
+	}
+
+
+	private float SpeedConvert(float speed, Angle from, Angle to) {
+		if(from == Angle.Down && to == Angle.Up) return -speed;
+		if(from == Angle.Up && to == Angle.Down) return -speed;
+		return speed;
+	}
+
+	private Angle ToAngle(byte angle) {
+		switch(angle) {
+			case 1: return Angle.UpperLeft;
+			case 2: return Angle.Up;
+			case 4: return Angle.UpperRight;
+			case 8: return Angle.Right;
+			case 16: return Angle.DownerRight;
+			case 32: return Angle.Down;
+			case 64: return Angle.DownerLeft;
+			case 128: return Angle.Left;
+			default: return Angle.Down;
+		}
+	}
+
+	private Vector2 ToVector(Angle angle) {
+		switch(angle) {
+			case Angle.UpperLeft:	return new Vector2(-1, 1).normalized;
+			case Angle.Up:			return new Vector2(0, 1);
+			case Angle.UpperRight:	return new Vector2(1, 1).normalized;
+			case Angle.Right:		return new Vector2(1, 0);
+			case Angle.DownerRight: return new Vector2(1, -1).normalized;
+			case Angle.Down:		return new Vector2(0, -1);
+			case Angle.DownerLeft:	return new Vector2(-1, -1).normalized;
+			case Angle.Left:		return new Vector2(-1, 0);
+			default: return new Vector2();
+		}
+	}
+
+	private void OnTriggerEnter2D(Collider2D collision) {
+
+		var enemy = collision.gameObject.GetComponent<Enemy>();
+		if(!enemy) return;
+
+		var g = Instantiate(AttackEffect, transform.position, transform.rotation);
+		Destroy(g.gameObject, 5);
+
+		enemy.Attack();
+	}
+}
