@@ -34,12 +34,10 @@ public class Player : MonoBehaviour {
 	public ParticleSystem AttackEffect;
 
 	private Animator _animator;
-	private Rigidbody2D _rig;
 	private ParticleSystem _moveEffect;
 	private Transform _eye;
 	private Transform _body;
 
-	private Vector2 _moveVec;
 	private bool _isDash = false;
 	private bool _isGround = false;
 	private PlayerStatus _currentStatus;
@@ -51,6 +49,16 @@ public class Player : MonoBehaviour {
 	private float _morph = 0;
 	private float _gravity = 9.81f;
 	private float _attackWait = 0;
+
+	private Vector2 _moveVec;
+	public Vector2 MoveVector {
+		get { return _moveVec; }
+	}
+
+	private Rigidbody2D _rig;
+	public Rigidbody2D Rig {
+		get { return _rig; }
+	}
 
 	private void Start() {
 
@@ -123,7 +131,7 @@ public class Player : MonoBehaviour {
 	private void CheckBlockSide() {
 
 		var length = 0.55f;
-		var mask = LayerMask.GetMask("Ground");
+		var mask = LayerMask.GetMask("CanStickGround");
 		var checkList = new[] {
 			new Vector2(-1,  1),
 			new Vector2( 0,  1),
@@ -158,17 +166,19 @@ public class Player : MonoBehaviour {
 	private void Move() {
 
 		// calc speed
-		float input = 0;
-		if(_gravityDirection == Angle.Down)
-			input = Input.GetAxisRaw("Horizontal");
-		if(_gravityDirection == Angle.Up)
-			input = -Input.GetAxisRaw("Horizontal");
-		if(_gravityDirection == Angle.Left)
-			input = -Input.GetAxisRaw("Vertical");
-		if(_gravityDirection == Angle.Right)
-			input = Input.GetAxisRaw("Vertical");
+		var input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
 
-		if(input != 0) _speed += input * _currentStatus.MaxAddSpeed;
+		var addSpeed = 0.0f;
+		if(_gravityDirection == Angle.Down)
+			addSpeed = input.x;
+		if(_gravityDirection == Angle.Up)
+			addSpeed = -input.x;
+		if(_gravityDirection == Angle.Left)
+			addSpeed = -input.y;
+		if(_gravityDirection == Angle.Right)
+			addSpeed = input.y;
+
+		if(addSpeed != 0) _speed += addSpeed * _currentStatus.MaxAddSpeed;
 		else _speed = Mathf.MoveTowards(_speed, 0, _currentStatus.MaxSubSpeed);
 
 		if(Mathf.Abs(_speed) < _currentStatus.MaxSpeed) _isDash = false;
@@ -206,10 +216,13 @@ public class Player : MonoBehaviour {
 		_animator.SetFloat("Speed", _speed / 2);
 
 		var scale = _eye.localScale;
-		if(input > 0) scale.x = 1;
-		if(input < 0) scale.x = -1;
+		if(addSpeed > 0) scale.x = 1;
+		if(addSpeed < 0) scale.x = -1;
+		if(_gravityDirection == Angle.Left) scale.x = 1;
+		if(_gravityDirection == Angle.Right) scale.x = -1;
+
 		if(_gravityDirection == Angle.Up) {
-			if(input != 0) scale.x *= -1;
+			if(addSpeed != 0) scale.x *= -1;
 			scale.y = -1;
 		}
 		else {
@@ -218,7 +231,7 @@ public class Player : MonoBehaviour {
 		_eye.localScale = scale;
 	}
 
-	private Angle CalcGravityDirectionAndMoveVec(float input, Angle currentGravity, out Vector2 moveVec) {
+	private Angle CalcGravityDirectionAndMoveVec(Vector2 input, Angle currentGravity, out Vector2 moveVec) {
 
 		moveVec = new Vector2(1, 0);
 		if(_ground == 0) return Angle.Down;
@@ -237,30 +250,38 @@ public class Player : MonoBehaviour {
 			return n;
 		};
 
-		var current = (byte)currentGravity;
-		var vec = 0;
-		if(input < 0) vec = 1;
-		else vec = -1;
+		var g = currentGravity;
+		var current = (byte)g;
+		var vec = 1;
 
-		if((current & (byte)(Angle.UpperLeft | Angle.UpperRight | Angle.DownerLeft | Angle.DownerRight)) > 0) {
-			current = rotate(current, vec);
-		}
+		//if(input < 0) vec = 1;
+		//else vec = -1;
 
-		// 凹
-		for(int i = 0;i < 2;i++) {
+		//if((current & (byte)(Angle.UpperLeft | Angle.UpperRight | Angle.DownerLeft | Angle.DownerRight)) > 0) {
+		//	current = rotate(current, vec);
+		//}
+
+		// 入力がないとき
+		//if((_ground & current) > 0 && input.x == 0 && input.y == 0) {
+		//	g = ToAngle(current);
+		//	moveVec = ToVector(ToAngle(rotate((byte)g, -2)));
+		//	return g;
+		//}
+
+		// 順番に見ていく
+		for(int i = 0;i < 3;i++) {
 			current = rotate(current, vec * 2);
 			if((_ground & current) > 0) {
-				moveVec = ToVector(ToAngle(rotate(current, -2)));
-				return ToAngle(current);
+				g = ToAngle(current);
+				break;
 			}
 		}
 
-		Debug.Log("Calc Error");
-		moveVec = ToVector(ToAngle(rotate((byte)currentGravity, -2)));
-		return currentGravity;
+		moveVec = ToVector(ToAngle(rotate((byte)g, -2)));
+		return g;
 	}
 
-		private void Morph(float ratio) {
+	private void Morph(float ratio) {
 
 		_currentStatus.Material.friction = Mathf.Lerp(StarStatus.Material.friction, CircleStatus.Material.friction, ratio);
 		_currentStatus.Material.bounciness = Mathf.Lerp(StarStatus.Material.bounciness, CircleStatus.Material.bounciness, ratio);
