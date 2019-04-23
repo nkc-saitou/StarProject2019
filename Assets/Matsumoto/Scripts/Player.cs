@@ -252,28 +252,27 @@ public class Player : MonoBehaviour {
 
 		var g = currentGravity;
 		var current = (byte)g;
-		var vec = 1;
-
-		//if(input < 0) vec = 1;
-		//else vec = -1;
-
-		//if((current & (byte)(Angle.UpperLeft | Angle.UpperRight | Angle.DownerLeft | Angle.DownerRight)) > 0) {
-		//	current = rotate(current, vec);
-		//}
-
-		// 入力がないとき
-		//if((_ground & current) > 0 && input.x == 0 && input.y == 0) {
-		//	g = ToAngle(current);
-		//	moveVec = ToVector(ToAngle(rotate((byte)g, -2)));
-		//	return g;
-		//}
 
 		// 順番に見ていく
+		var isFinded = false;
 		for(int i = 0;i < 3;i++) {
-			current = rotate(current, vec * 2);
+			current = rotate(current, 2);
 			if((_ground & current) > 0) {
+				if(isFinded) break;
 				g = ToAngle(current);
-				break;
+				isFinded = true;
+			}
+		}
+
+		// 複数壁があるときは入力で判断
+		if(isFinded) {
+			if(input.x != 0) {
+				if((_ground & (byte)Angle.Down) > 0) g = Angle.Down;
+				if((_ground & (byte)Angle.Up) > 0) g = Angle.Up;
+			}
+			if(input.y != 0) {
+				if((_ground & (byte)Angle.Left) > 0) g = Angle.Left;
+				if((_ground & (byte)Angle.Right) > 0) g = Angle.Right;
 			}
 		}
 
