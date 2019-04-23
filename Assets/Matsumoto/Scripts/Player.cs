@@ -26,7 +26,8 @@ public class Player : MonoBehaviour {
 	public float MorphSpeed = 1;
 	public float ChargeSpeed = 1;
 	public float MaxChargePower = 500;
-	public float AttackWaitTime = 0.3f;
+	public float AttackHitTime = 0.2f;	
+	public float AttackWaitTime = 0.3f; // AttackHitTimeより大きくないと判定がアレ
 
 	public Collider2D AttackCollider;
 	public ParticleSystem MoveEffect;
@@ -39,6 +40,7 @@ public class Player : MonoBehaviour {
 	private Transform _body;
 
 	private bool _isDash = false;
+	private bool _canDash = true;
 	private bool _isGround = false;
 	private PlayerStatus _currentStatus;
 	private PlayerState _state;
@@ -84,10 +86,13 @@ public class Player : MonoBehaviour {
 	private void Update () {
 
 		CheckBlockSide();
+		if(_isGround) _canDash = true;
 
 		if(CheckCanAttack() && Input.GetButtonDown("Attack")) {
 			Attack();
 			_attackWait = AttackWaitTime;
+			// 地上は無限に使える
+			_canDash = _isGround;
 		}
 
 		var morph = _morph;
@@ -115,6 +120,7 @@ public class Player : MonoBehaviour {
 
 	private bool CheckCanAttack() {
 		if(_state != PlayerState.Star) return false;
+		if(!_canDash) return false;
 
 		_attackWait -= Time.deltaTime;
 		_attackWait = Mathf.Max(_attackWait, 0);
@@ -131,22 +137,24 @@ public class Player : MonoBehaviour {
 	private void CheckBlockSide() {
 
 		var length = 0.55f;
-		var mask = LayerMask.GetMask("CanStickGround");
+		var maskStick = LayerMask.GetMask("CanStickGround");
+		var maskGround = LayerMask.GetMask("CanStickGround", "Ground");
+
 		var checkList = new[] {
-			new Vector2(-1,  1),
-			new Vector2( 0,  1),
-			new Vector2( 1,  1),
-			new Vector2( 1,  0),
-			new Vector2( 1, -1),
-			new Vector2( 0, -1),
-			new Vector2(-1, -1),
-			new Vector2(-1,  0),
+			new KeyValuePair<Vector2, int>(new Vector2(-1,  1), maskStick),
+			new KeyValuePair<Vector2, int>(new Vector2( 0,  1), maskStick),
+			new KeyValuePair<Vector2, int>(new Vector2( 1,  1), maskStick),
+			new KeyValuePair<Vector2, int>(new Vector2( 1,  0), maskStick),
+			new KeyValuePair<Vector2, int>(new Vector2( 1, -1), maskGround),
+			new KeyValuePair<Vector2, int>(new Vector2( 0, -1), maskGround),
+			new KeyValuePair<Vector2, int>(new Vector2(-1, -1), maskGround),
+			new KeyValuePair<Vector2, int>(new Vector2(-1,  0), maskStick),
 		};
 
 		_ground = 0;
 		for(int i = 0;i < checkList.Length;i++) {
 
-			var hit = Physics2D.Raycast(transform.position, checkList[i], length, mask);
+			var hit = Physics2D.Raycast(transform.position, checkList[i].Key, length, checkList[i].Value);
 			Color c;
 			if(hit.collider) {
 				_ground |= (byte)Mathf.Pow(2, i);
@@ -155,7 +163,7 @@ public class Player : MonoBehaviour {
 			else {
 				c = Color.red;
 			}
-			Debug.DrawRay(transform.position, checkList[i].normalized * length, c);
+			Debug.DrawRay(transform.position, checkList[i].Key.normalized * length, c);
 		}
 
 		if(_state == PlayerState.Star) _isGround = _ground > 0;
@@ -342,8 +350,16 @@ public class Player : MonoBehaviour {
 
 		_rig.AddForce(input * _currentStatus.DashPower);
 		_isDash = true;
+
+		// 攻撃判定
+		StartCoroutine(AttackCollision());
 	}
 
+	private IEnumerator AttackCollision() {
+		AttackCollider.enabled = true;
+		yield return new WaitForSeconds(AttackHitTime);
+		AttackCollider.enabled = false;
+	}
 
 	private float SpeedConvert(float speed, Angle from, Angle to) {
 		if(from == Angle.Down && to == Angle.Up) return -speed;
@@ -388,5 +404,12 @@ public class Player : MonoBehaviour {
 		Destroy(g.gameObject, 5);
 
 		enemy.Attack();
+	}
+
+	private void OnDrawGizmos() {
+		if(!AttackCollider.enabled) return;
+
+		Gizmos.color = Color.yellow;
+		Gizmos.DrawSphere(transform.position, 0.5f);
 	}
 }
