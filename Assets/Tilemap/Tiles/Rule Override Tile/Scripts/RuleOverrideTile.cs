@@ -250,9 +250,9 @@ namespace UnityEngine
                 to.m_RuleTransform = from.m_RuleTransform;
             }
             to.m_Sprites = from.m_Sprites.Clone() as Sprite[];
-            to.m_GameObject = from.m_GameObject;			// Fixed Override GameObject
+            to.m_GameObject = from.m_GameObject;
             to.m_AnimationSpeed = from.m_AnimationSpeed;
-			to.m_PerlinScale = from.m_PerlinScale;
+            to.m_PerlinScale = from.m_PerlinScale;
             to.m_Output = from.m_Output;
             to.m_ColliderType = from.m_ColliderType;
             to.m_RandomTransform = from.m_RandomTransform;
