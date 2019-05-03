@@ -62,6 +62,10 @@ public class Player : MonoBehaviour {
 		get { return _rig; }
 	}
 
+	public bool IsFreeze {
+		get; set;
+	}
+
 	private void Start() {
 
 		AttackCollider.enabled = false;
@@ -84,6 +88,8 @@ public class Player : MonoBehaviour {
 
 	// Update is called once per frame
 	private void Update () {
+
+		if(IsFreeze) return;
 
 		CheckBlockSide();
 		if(_isGround) _canDash = true;
@@ -172,6 +178,8 @@ public class Player : MonoBehaviour {
 	}
 
 	private void Move() {
+
+		if(IsFreeze) return;
 
 		// calc speed
 		var input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
@@ -395,6 +403,24 @@ public class Player : MonoBehaviour {
 		}
 	}
 
+	IEnumerator HitStop(float time) {
+
+		// 保存
+		var vel = _rig.velocity;
+
+		IsFreeze = true;
+		_rig.velocity = new Vector2();
+		_rig.isKinematic = true;
+		_animator.SetFloat("Speed", 0);
+
+		yield return new WaitForSeconds(time);
+
+		// 復帰
+		IsFreeze = false;
+		_rig.velocity = vel;
+		_rig.isKinematic = false;
+	}
+
 	private void OnTriggerEnter2D(Collider2D collision) {
 
 		var enemy = collision.gameObject.GetComponent<Enemy>();
@@ -404,6 +430,7 @@ public class Player : MonoBehaviour {
 		Destroy(g.gameObject, 5);
 
 		enemy.Attack();
+		StartCoroutine(HitStop(0.1f));
 	}
 
 	private void OnDrawGizmos() {
