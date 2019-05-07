@@ -37,7 +37,8 @@ public class Player : MonoBehaviour {
 	private Animator _animator;
 	private ParticleSystem _moveEffect;
 	private Transform _eye;
-	private Transform _body;
+	private SpriteRenderer _body;
+	private SpriteRenderer _bodyWithBone;
 
 	private bool _isDash = false;
 	private bool _canDash = true;
@@ -62,6 +63,10 @@ public class Player : MonoBehaviour {
 		get { return _rig; }
 	}
 
+	public bool IsFreeze {
+		get; set;
+	}
+
 	private void Start() {
 
 		AttackCollider.enabled = false;
@@ -71,7 +76,8 @@ public class Player : MonoBehaviour {
 		_moveEffect = Instantiate(MoveEffect, transform.position, transform.rotation);
 		_moveEffect.transform.SetParent(transform);
 		_eye = transform.Find("Eye");
-		_body = transform.Find("Body");
+		_body = transform.Find("Body").GetComponent<SpriteRenderer>();
+		_bodyWithBone = _body.transform.Find("StarWithBone").GetComponent<SpriteRenderer>();
 
 		_currentStatus = ScriptableObject.CreateInstance<PlayerStatus>();
 		_currentStatus.Material = new PhysicsMaterial2D("CurrentMat");
@@ -84,6 +90,8 @@ public class Player : MonoBehaviour {
 
 	// Update is called once per frame
 	private void Update () {
+
+		if(IsFreeze) return;
 
 		CheckBlockSide();
 		if(_isGround) _canDash = true;
@@ -172,6 +180,8 @@ public class Player : MonoBehaviour {
 	}
 
 	private void Move() {
+
+		if(IsFreeze) return;
 
 		// calc speed
 		var input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
@@ -304,6 +314,11 @@ public class Player : MonoBehaviour {
 
 		// Animation
 		_animator.SetFloat("Morph", ratio);
+
+		// 描画選択
+		var pstar = ratio != 0;
+		_body.enabled = pstar;
+		_bodyWithBone.enabled = !pstar;
 	}
 
 	private IEnumerator MorphAnimation(PlayerState toMorph, float morphSpeed) {
@@ -395,6 +410,24 @@ public class Player : MonoBehaviour {
 		}
 	}
 
+	IEnumerator HitStop(float time) {
+
+		// 保存
+		var vel = _rig.velocity;
+
+		IsFreeze = true;
+		_rig.velocity = new Vector2();
+		_rig.isKinematic = true;
+		_animator.SetFloat("Speed", 0);
+
+		yield return new WaitForSeconds(time);
+
+		// 復帰
+		IsFreeze = false;
+		_rig.velocity = vel;
+		_rig.isKinematic = false;
+	}
+
 	private void OnTriggerEnter2D(Collider2D collision) {
 
 		var enemy = collision.gameObject.GetComponent<Enemy>();
@@ -404,6 +437,7 @@ public class Player : MonoBehaviour {
 		Destroy(g.gameObject, 5);
 
 		enemy.Attack();
+		StartCoroutine(HitStop(0.1f));
 	}
 
 	private void OnDrawGizmos() {
