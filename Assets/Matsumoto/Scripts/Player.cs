@@ -37,7 +37,8 @@ public class Player : MonoBehaviour {
 	private Animator _animator;
 	private ParticleSystem _moveEffect;
 	private Transform _eye;
-	private Transform _body;
+	private SpriteRenderer _body;
+	private SpriteRenderer _bodyWithBone;
 
 	private bool _isDash = false;
 	private bool _canDash = true;
@@ -75,7 +76,8 @@ public class Player : MonoBehaviour {
 		_moveEffect = Instantiate(MoveEffect, transform.position, transform.rotation);
 		_moveEffect.transform.SetParent(transform);
 		_eye = transform.Find("Eye");
-		_body = transform.Find("Body");
+		_body = transform.Find("Body").GetComponent<SpriteRenderer>();
+		_bodyWithBone = _body.transform.Find("StarWithBone").GetComponent<SpriteRenderer>();
 
 		_currentStatus = ScriptableObject.CreateInstance<PlayerStatus>();
 		_currentStatus.Material = new PhysicsMaterial2D("CurrentMat");
@@ -312,6 +314,11 @@ public class Player : MonoBehaviour {
 
 		// Animation
 		_animator.SetFloat("Morph", ratio);
+
+		// 描画選択
+		var pstar = ratio != 0;
+		_body.enabled = pstar;
+		_bodyWithBone.enabled = !pstar;
 	}
 
 	private IEnumerator MorphAnimation(PlayerState toMorph, float morphSpeed) {
