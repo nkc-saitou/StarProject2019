@@ -50,7 +50,6 @@ public class Player : MonoBehaviour {
 	private Angle _gravityDirection = Angle.Down;
 	private byte _ground = 0;
 	private float _morph = 0;
-	private float _gravity = 9.81f;
 	private float _attackWait = 0;
 
 	private Vector2 _moveVec;
@@ -212,11 +211,11 @@ public class Player : MonoBehaviour {
 
 		var vel = _rig.velocity;
 
-		// 要検討
+		// 重力と入力に分解して計算
 		var g = (Vector2)Vector3.Project(vel, ToVector(_gravityDirection));
 		var v = (Vector2)Vector3.Project(vel, _moveVec);
 
-		g += ToVector(_gravityDirection) * _gravity * Time.deltaTime; // gravity
+		g += ToVector(_gravityDirection) * _currentStatus.Gravity * Time.deltaTime; // gravity
 
 		if(v.sqrMagnitude < maxSpeed * maxSpeed) {
 			// move
@@ -228,6 +227,10 @@ public class Player : MonoBehaviour {
 		}
 		vel = g + v;
 
+		// 空気抵抗
+		vel = Vector2.MoveTowards(vel, new Vector2(), vel.magnitude * _currentStatus.AirResistance * Time.deltaTime);
+
+		// 適用
 		_rig.velocity = vel;
 
 		// Animation
@@ -308,14 +311,15 @@ public class Player : MonoBehaviour {
 		_currentStatus.DashPower = Mathf.Lerp(StarStatus.DashPower, CircleStatus.DashPower, ratio);
 		_currentStatus.MaxAddSpeed = Mathf.Lerp(StarStatus.MaxAddSpeed, CircleStatus.MaxAddSpeed, ratio);
 		_currentStatus.MaxSubSpeed = Mathf.Lerp(StarStatus.MaxSubSpeed, CircleStatus.MaxSubSpeed, ratio);
-		_gravity = Mathf.Lerp(StarStatus.Gravity, CircleStatus.Gravity, ratio);
+		_currentStatus.Gravity = Mathf.Lerp(StarStatus.Gravity, CircleStatus.Gravity, ratio);
+		_currentStatus.AirResistance = Mathf.Lerp(StarStatus.AirResistance, CircleStatus.AirResistance, ratio);
 
 		_rig.sharedMaterial = _currentStatus.Material;
 
 		// Animation
 		_animator.SetFloat("Morph", ratio);
 
-		// 描画選択
+		// 描画対象選択
 		var pstar = ratio != 0;
 		_body.enabled = pstar;
 		_bodyWithBone.enabled = !pstar;

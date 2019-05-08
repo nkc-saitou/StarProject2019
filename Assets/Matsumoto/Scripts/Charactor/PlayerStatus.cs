@@ -12,5 +12,6 @@ public class PlayerStatus : ScriptableObject {
 	public float MaxAddSpeed;
 	public float MaxSubSpeed;
 	public float Gravity;
+	public float AirResistance;
 }
 
