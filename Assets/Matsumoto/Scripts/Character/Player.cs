@@ -509,13 +509,13 @@ namespace Matsumoto.Character {
 
 		private void OnTriggerEnter2D(Collider2D collision) {
 
-			var enemy = collision.gameObject.GetComponent<Enemy>();
-			if(!enemy) return;
+			var enemy = collision.gameObject.GetComponent<IEnemy>();
+			if(enemy == null) return;
 
 			var g = Instantiate(AttackEffect, transform.position, transform.rotation);
 			Destroy(g.gameObject, 5);
 
-			enemy.Attack();
+			enemy.ApplyDamage();
 
 			// 敵にあたったら回復
 			_canDash = true;
