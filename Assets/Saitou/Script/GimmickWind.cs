@@ -9,8 +9,6 @@ namespace StarProject2019.Saitou
     /// </summary>
     public class GimmickWind : MonoBehaviour,IGimmickEffect
     {
-
-
         /// <summary>
         /// 風のギミック動作
         /// </summary>
