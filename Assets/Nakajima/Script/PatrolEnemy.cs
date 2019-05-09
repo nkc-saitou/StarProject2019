@@ -82,9 +82,13 @@ public class PatrolEnemy : EnemyBase, IEnemy
         // プレイヤーとの距離を検出
         playerDis = CheckDistanceX(target.transform.position);
 
+        // Y軸方向の距離取得
+        float offsetY = CheckDistanceY(target.transform.position);
+        // ターゲットが上にいる場合はリターン
+        if (offsetY >= 0.0f) return;
+
         // アクション範囲にいるなら
         if (playerDis <= actionRange) Action();
-
     }
 
     /// <summary>
