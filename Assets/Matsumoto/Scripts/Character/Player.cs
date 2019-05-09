@@ -31,6 +31,7 @@ namespace Matsumoto.Character {
 		public float MaxChargePower = 500;
 		public float AttackHitTime = 0.2f;
 		public float AttackWaitTime = 0.3f; // AttackHitTimeより大きくないと判定がアレ
+		public float JumpWaitTime = 0.2f;
 
 		public Collider2D AttackCollider;
 		public ParticleSystem MoveEffect;
@@ -54,6 +55,7 @@ namespace Matsumoto.Character {
 		private byte _ground = 0;
 		private float _morph = 0;
 		private float _attackWait = 0;
+		private float _jumpWait = 0;
 
 		private Vector2 _moveVec;
 		public Vector2 MoveVector {
@@ -71,6 +73,7 @@ namespace Matsumoto.Character {
 			set {
 				_isFreeze = value;
 				_rig.simulated = !value;
+				_animator.SetFloat("Speed", value? _speed / 2 : 0);
 			}
 		}
 
@@ -108,7 +111,6 @@ namespace Matsumoto.Character {
 
 		private void Start() {
 
-			// エフェクト操作
 			OnChangeState += (oldState, newState) => {
 
 				switch(newState) {
@@ -151,14 +153,18 @@ namespace Matsumoto.Character {
 			morph = Mathf.Clamp(morph, 0, 1);
 			if(morph != _morph) {
 
-				if(_morph == 0) {
+				if(_morph == 0 && _jumpWait == 0) {
 					// Jump
+					_jumpWait = JumpWaitTime;
 					_rig.AddForce(ToVector(_gravityDirection) * -MaxChargePower);
+
 					Debug.Log(_gravityDirection);
 					var g = Instantiate(JumpEffect, transform);
 					g.transform.SetParent(null);
 					Destroy(g.gameObject, 5);
 				}
+
+				_jumpWait = Mathf.Max(0, _jumpWait - Time.deltaTime);
 
 				_morph = morph;
 				Morph(_morph);
