@@ -48,7 +48,6 @@ namespace Matsumoto.Character {
 		private bool _canDash = true;
 		private bool _isGround = false;
 		private PlayerStatus _currentStatus;
-		private PlayerState _state;
 
 		private float _speed = 0;
 		private Angle _gravityDirection = Angle.Down;
@@ -62,9 +61,18 @@ namespace Matsumoto.Character {
 			get { return _moveVec; }
 		}
 
+		private float _moveSpeed;
+		public float MoveSpeed {
+			get { return _moveSpeed; }
+		}
+
 		private Rigidbody2D _rig;
 		public Rigidbody2D Rig {
 			get { return _rig; }
+		}
+
+		public PlayerState State {
+			get; private set;
 		}
 
 		private bool _isFreeze;
@@ -180,7 +188,7 @@ namespace Matsumoto.Character {
 		}
 
 		private bool CheckCanAttack() {
-			if(_state != PlayerState.Star) return false;
+			if(State != PlayerState.Star) return false;
 			if(!_canDash) return false;
 
 			_attackWait -= Time.deltaTime;
@@ -226,7 +234,7 @@ namespace Matsumoto.Character {
 				Debug.DrawRay(transform.position, checkList[i].Key.normalized * length, c);
 			}
 
-			if(_state == PlayerState.Star) _isGround = _ground > 0;
+			if(State == PlayerState.Star) _isGround = _ground > 0;
 			else _isGround = (_ground & (byte)(Angle.DownerLeft | Angle.Down | Angle.DownerRight)) > 0;
 
 		}
@@ -261,7 +269,7 @@ namespace Matsumoto.Character {
 			// move and gravity
 			_moveVec = new Vector2(1, 0);
 			var old = _gravityDirection;
-			_gravityDirection = _state == PlayerState.Star ? CalcGravityDirectionAndMoveVec(input, _gravityDirection, out _moveVec) : Angle.Down;
+			_gravityDirection = State == PlayerState.Star ? CalcGravityDirectionAndMoveVec(input, _gravityDirection, out _moveVec) : Angle.Down;
 			if(old != _gravityDirection) _speed = SpeedConvert(_speed, old, _gravityDirection);
 
 			var vel = _rig.velocity;
@@ -282,8 +290,11 @@ namespace Matsumoto.Character {
 			}
 			vel = g + v;
 
+			// 速度の更新
+			_moveSpeed = vel.magnitude;
+
 			// 空気抵抗
-			vel = Vector2.MoveTowards(vel, new Vector2(), vel.magnitude * _currentStatus.AirResistance * Time.deltaTime);
+			vel = Vector2.MoveTowards(vel, new Vector2(), _moveSpeed * _currentStatus.AirResistance * Time.deltaTime);
 
 			// 適用
 			_rig.velocity = vel;
@@ -383,9 +394,9 @@ namespace Matsumoto.Character {
 		private IEnumerator MorphAnimation(PlayerState toMorph, float morphSpeed) {
 
 			if(toMorph == PlayerState.Morphing) yield break;
-			if(_state == toMorph) yield break;
+			if(State == toMorph) yield break;
 
-			_state = PlayerState.Morphing;
+			State = PlayerState.Morphing;
 
 			Func<PlayerState, float, float> toVec = (state, current) => {
 				switch(state) {
@@ -430,9 +441,9 @@ namespace Matsumoto.Character {
 
 		private void ChangeState(PlayerState state, bool isForce = false) {
 
-			if(state == _state && !isForce) return;
-			OnChangeState(_state, state);
-			_state = state;
+			if(state == State && !isForce) return;
+			OnChangeState(State, state);
+			State = state;
 
 		}
 
