@@ -35,7 +35,7 @@ namespace Matsumoto.Character {
 			var target = TargetPlayer.transform.position;
 
 			// 移動方向に寄せる
-			var targetOffset = TargetPlayer.Rig.velocity.normalized * FollowView;
+			var targetOffset = TargetPlayer.PlayerRig.velocity.normalized * FollowView;
 			var magSpeed = Vector2.Angle(_angleOffset, targetOffset) / 360 * 2 + 1;
 			_angleOffset = Vector3.MoveTowards(_angleOffset, targetOffset, FollowSpeed * Time.deltaTime * magSpeed);
 

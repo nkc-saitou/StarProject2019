@@ -25,17 +25,19 @@ public class Enemy : MonoBehaviour {
 
 	IEnumerator Moving() {
 
-		var t = 0.0f;
-		while((t += Time.deltaTime * Speed) <= 1.0f) {
-			transform.position = Vector2.Lerp(_startPosition, _startPosition + MovePosition, t);
-			yield return null;
-		}
+		yield return null;
 
-		while((t -= Time.deltaTime * Speed) >= 0.0f) {
-			transform.position = Vector2.Lerp(_startPosition, _startPosition + MovePosition, t);
-			yield return null;
-		}
+		//var t = 0.0f;
+		//while((t += Time.deltaTime * Speed) <= 1.0f) {
+		//	transform.position = Vector2.Lerp(_startPosition, _startPosition + MovePosition, t);
+		//	yield return null;
+		//}
 
-		StartCoroutine(Moving());
+		//while((t -= Time.deltaTime * Speed) >= 0.0f) {
+		//	transform.position = Vector2.Lerp(_startPosition, _startPosition + MovePosition, t);
+		//	yield return null;
+		//}
+
+		//StartCoroutine(Moving());
 	}
 }
