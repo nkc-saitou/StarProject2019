@@ -32,6 +32,34 @@ public class EnemyBase : MonoBehaviour
         return _distance;
     }
 
+    /// <summary>
+    /// 目標とのX座標距離を返す
+    /// </summary>
+    /// <param name="_targetPos">目標地点の座標</param>
+    /// <returns></returns>
+    protected float CheckDistanceX(Vector2 _targetPos)
+    {
+        // 目標座標との距離の検出
+        float _distance = Mathf.Abs(_targetPos.x - transform.position.x);
+
+        // 距離を返す
+        return _distance;
+    }
+
+    /// <summary>
+    /// 目標とのY座標距離を返す
+    /// </summary>
+    /// <param name="_targetPos">目標地点の座標</param>
+    /// <returns></returns>
+    protected float CheckDistanceY(Vector2 _targetPos)
+    {
+        // 目標座標との距離の検出
+        float _distance = Mathf.Abs(_targetPos.y - transform.position.y);
+
+        // 距離を返す
+        return _distance;
+    }
+
     // アクションを起こすかチェック
     protected virtual void CheckAction() { }
 

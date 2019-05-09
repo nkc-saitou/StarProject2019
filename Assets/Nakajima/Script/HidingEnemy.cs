@@ -40,10 +40,7 @@ public class HidingEnemy : EnemyBase, IEnemy
         playerDis = CheckDistance(target.transform.position);
 
         // アクション範囲にいるなら
-        if(playerDis <= actionRange)
-        {
-            Action();
-        }
+        if(playerDis <= actionRange) Action();
 
     }
 
@@ -56,7 +53,7 @@ public class HidingEnemy : EnemyBase, IEnemy
         Vector2 playerDir = target.transform.position - transform.position;
 
         // 突進
-        myRig.AddForce(playerDir * 100.0f, ForceMode2D.Force);
+        myRig.AddForce(playerDir * 75.0f, ForceMode2D.Force);
 
         canAction = false;
 
