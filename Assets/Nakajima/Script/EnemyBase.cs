@@ -68,5 +68,5 @@ public class EnemyBase : MonoBehaviour
     /// </summary>
     /// <param name="_interval">待機時間</param>
     /// <returns></returns>
-    protected virtual IEnumerator Interval(float _interval) { yield return null; }
+    protected virtual IEnumerator IntervalAction(float _interval) { yield return null; }
 }

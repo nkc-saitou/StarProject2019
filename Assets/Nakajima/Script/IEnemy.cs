@@ -10,4 +10,7 @@ public interface IEnemy
 
     // アクション(攻撃など)
     void Action();
+
+    // ダメージを受ける
+    void ApplyDamage();
 }

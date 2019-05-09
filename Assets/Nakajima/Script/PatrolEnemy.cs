@@ -100,7 +100,7 @@ public class PatrolEnemy : EnemyBase, IEnemy
 
         canAction = false;
 
-        StartCoroutine(Interval(2.0f));
+        StartCoroutine(IntervalAction(2.0f));
     }
 
     /// <summary>
@@ -108,10 +108,18 @@ public class PatrolEnemy : EnemyBase, IEnemy
     /// </summary>
     /// <param name="_interval">待機時間</param>
     /// <returns></returns>
-    protected override IEnumerator Interval(float _interval)
+    protected override IEnumerator IntervalAction(float _interval)
     {
         yield return new WaitForSeconds(_interval);
 
         canAction = true;
+    }
+
+    /// <summary>
+    /// ダメージを受けた際の処理
+    /// </summary>
+    public void ApplyDamage()
+    {
+        Destroy(gameObject);
     }
 }

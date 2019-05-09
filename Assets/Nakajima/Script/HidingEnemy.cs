@@ -8,24 +8,26 @@ using UnityEngine;
 public class HidingEnemy : EnemyBase, IEnemy
 {
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start()
+    {
         target = GameObject.Find("Player");
         myRig = GetComponent<Rigidbody2D>();
         canAction = true;
-	}
-	
-	// Update is called once per frame
-	void Update () {
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
         CheckAction();
-	}
+    }
 
     /// <summary>
     /// 移動
     /// </summary>
     public void Move()
     {
-        
+
     }
 
     /// <summary>
@@ -40,7 +42,7 @@ public class HidingEnemy : EnemyBase, IEnemy
         playerDis = CheckDistance(target.transform.position);
 
         // アクション範囲にいるなら
-        if(playerDis <= actionRange) Action();
+        if (playerDis <= actionRange) Action();
 
     }
 
@@ -57,7 +59,7 @@ public class HidingEnemy : EnemyBase, IEnemy
 
         canAction = false;
 
-        StartCoroutine(Interval(2.0f));
+        StartCoroutine(IntervalAction(2.0f));
     }
 
     /// <summary>
@@ -65,10 +67,18 @@ public class HidingEnemy : EnemyBase, IEnemy
     /// </summary>
     /// <param name="_interval">待機時間</param>
     /// <returns></returns>
-    protected override IEnumerator Interval(float _interval)
+    protected override IEnumerator IntervalAction(float _interval)
     {
         yield return new WaitForSeconds(_interval);
 
         canAction = true;
+    }
+
+    /// <summary>
+    /// ダメージを受けた際の処理
+    /// </summary>
+    public void ApplyDamage()
+    {
+        Destroy(gameObject);
     }
 }
