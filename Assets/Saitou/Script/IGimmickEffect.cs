@@ -12,7 +12,6 @@ namespace StarProject2019.Saitou
         /// <summary>
         /// ギミックの効果発動
         /// </summary>
-        /// <param name="_target">効果を与える相手</param>
-        void ActiveEffect(GameObject _target);
+        void ActiveEffect();
     }
 }
