@@ -12,11 +12,16 @@ public class PatrolEnemy : EnemyBase, IEnemy
     private Vector2 originPos;
     // 探索位置
     [SerializeField]
+    private Vector2 moveValue;
+
     private Vector2 goalPos;
 
     // 攻撃用オブジェクト
     [SerializeField]
     private GameObject bombObj;
+
+    // 移動に使う変数
+    float time = 0.0f;
 
     // Use this for initialization
     void Start()
@@ -24,51 +29,37 @@ public class PatrolEnemy : EnemyBase, IEnemy
         target = GameObject.Find("Player");
         currentPos = transform.position;
         originPos = transform.position;
+        goalPos = originPos + moveValue;
         targetPos = goalPos;
         canAction = true;
-
-        Move();
     }
 	
 	// Update is called once per frame
 	void Update () {
         CheckAction();
-	}
+
+        Move();
+    }
 
     /// <summary>
     /// 移動
     /// </summary>
     public void Move()
     {
-        StartCoroutine(PatrolMove());
-    }
+        time += Time.deltaTime;
 
-    /// <summary>
-    /// 徘徊移動
-    /// </summary>
-    /// <returns></returns>
-    IEnumerator PatrolMove()
-    {
-        float time = 0.0f;
+        // 目標地点に移動
+        transform.position = Vector2.Lerp(transform.position, targetPos, time * Time.deltaTime);
+        // 現在位置の更新
+        currentPos = transform.position;
 
-        while(time <= 1.0f) {
-            // 目標地点に移動
-            transform.position = Vector2.Lerp(transform.position, originPos + goalPos, time);
-            time += Time.deltaTime;
-            yield return null;
+        // 目標地点に近づいたら行き先変更
+        if(Mathf.Abs(currentPos.x - targetPos.x) <= 0.5f) {
+            if (targetPos == originPos) targetPos = goalPos;
+            else if (targetPos == goalPos) targetPos = originPos;
+
+            time = 0.0f;
         }
-
-        time = 0.0f;
-
-        while (time <= 1.0f)
-        {
-            // 目標地点に移動
-            transform.position = Vector2.Lerp(transform.position, originPos, time);
-            time += Time.deltaTime;
-            yield return null;
-        }
-
-        Move();
     }
 
     /// <summary>
