@@ -23,6 +23,7 @@ namespace Matsumoto.Character {
 		public float RandomInterval = 3.0f;
 		public float ChangeIntervalTime = 2.0f;		// 切り替える最低の時間
 		public float MorphSpeed = 9;
+		public float RandomScale = 0.4f;			// ランダムで変化する量
 
 		private Animator _animator;
 		private Rigidbody2D _rigidbody;
@@ -53,6 +54,14 @@ namespace Matsumoto.Character {
 			_bodyWithBone = _body.transform.Find("StarWithBone").GetComponent<SpriteRenderer>();
 
 			ChangeState(FollowerState.Follow);
+
+			// ランダムなパラメーターを設定
+			FollowStartRange += Random.Range(FollowStartRange * RandomScale, -FollowStartRange * RandomScale);
+			FlyRange += Random.Range(FlyRange * RandomScale, -FlyRange * RandomScale);
+			WalkSpeed += Random.Range(WalkSpeed * RandomScale, -WalkSpeed * RandomScale);
+			FlySpeed += Random.Range(FlySpeed * RandomScale, -FlySpeed * RandomScale);
+			RandomInterval += Random.Range(RandomInterval * RandomScale, -RandomInterval * RandomScale);
+			ChangeIntervalTime += Random.Range(ChangeIntervalTime * RandomScale, -ChangeIntervalTime * RandomScale);
 		}
 
 		// Update is called once per frame
