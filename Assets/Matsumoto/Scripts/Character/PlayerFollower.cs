@@ -16,10 +16,12 @@ namespace Matsumoto.Character {
 
 		public Player Target;
 		public Collider2D MainCollider;
-		public float FollowStartRange = 5.0f;
-		public float FlyRange = 10.0f;
+		public float FollowStartRange = 2.0f;
+		public float FlyRange = 4.0f;
 		public float WalkSpeed = 5.0f;
 		public float FlySpeed = 10.0f;
+		public float RandomInterval = 3.0f;
+		public float ChangeIntervalTime = 2.0f;		// 切り替える最低の時間
 		public float MorphSpeed = 9;
 
 		private Animator _animator;
@@ -29,6 +31,7 @@ namespace Matsumoto.Character {
 
 		private int _detectColliders;
 		private float _speed = 0.0f;
+		private float _changeInterval = 0.0f;
 		private float _morph = 0;
 		private bool _isGround = true;
 		private bool _isFly = false;
@@ -54,8 +57,8 @@ namespace Matsumoto.Character {
 			//GroundUpdate();
 
 			// state
-			//var isFollow = FollowStartRange * FollowStartRange > (transform.position - Target.transform.position).sqrMagnitude;
-			//ChangeState(isFollow ? FollowerState.Follow : FollowerState.RandomWalk);
+			var isFollow = FollowStartRange * FollowStartRange > (transform.position - Target.transform.position).sqrMagnitude;
+			ChangeState(isFollow ? FollowerState.Follow : FollowerState.RandomWalk);
 
 			var morphVec = _isFly ? 1 : -1;
 			_morph += morphVec * MorphSpeed * Time.deltaTime;
@@ -65,6 +68,8 @@ namespace Matsumoto.Character {
 		}
 
 		private void FixedUpdate() {
+
+			_changeInterval = Mathf.Max(0, _changeInterval - Time.deltaTime);
 
 			if(!Target) {
 				Target = FindObjectOfType<Player>();
@@ -115,17 +120,31 @@ namespace Matsumoto.Character {
 			var vel = _rigidbody.velocity;
 
 			var isFly = FlyRange * FlyRange < diff.sqrMagnitude;
+
 			// めり込んでいたら戻さない
-			if(_isFly && _detectColliders > 1) {
+			if(!isFly && _detectColliders > 0) {
 				isFly = _isFly;
+			}
+
+			// インターバル内であれば変えない
+			if (isFly != _isFly && _changeInterval > 0) {
+				isFly = _isFly;
+
 			}
 
 			// 変更した瞬間
 			if(_isFly != isFly) {
 
 				_isFly = isFly;
+				_changeInterval = ChangeIntervalTime;
+
 				MainCollider.enabled = !isFly;
 
+				// スピードの変換
+				if (_isFly)
+					_speed = Mathf.Abs(_speed);
+				else
+					_speed = (_speed * vec).x;
 			}
 
 			if(isFly) {
@@ -152,6 +171,8 @@ namespace Matsumoto.Character {
 		}
 
 		private void RandomMove() {
+
+
 
 		}
 
