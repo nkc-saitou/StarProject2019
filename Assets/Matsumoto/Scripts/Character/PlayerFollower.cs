@@ -6,7 +6,7 @@ namespace Matsumoto.Character {
 
 	public enum FollowerState {
 		Follow,
-		RandomWalk,
+		Stay,
 	}
 
 	public class PlayerFollower : MonoBehaviour {
@@ -27,14 +27,17 @@ namespace Matsumoto.Character {
 		private Animator _animator;
 		private Rigidbody2D _rigidbody;
 		private SpriteRenderer _body;
+		private Transform _eye;
 		private SpriteRenderer _bodyWithBone;
 
 		private int _detectColliders;
 		private float _speed = 0.0f;
+		private float _randomInterval = 0.0f;
 		private float _changeInterval = 0.0f;
 		private float _morph = 0;
 		private bool _isGround = true;
 		private bool _isFly = false;
+		private Vector2 _nextRandomposition;
 
 		public FollowerState State {
 			get; private set;
@@ -46,6 +49,7 @@ namespace Matsumoto.Character {
 			_animator = GetComponent<Animator>();
 			_rigidbody = GetComponent<Rigidbody2D>();
 			_body = transform.Find("Body").GetComponent<SpriteRenderer>();
+			_eye = transform.Find("Eye");
 			_bodyWithBone = _body.transform.Find("StarWithBone").GetComponent<SpriteRenderer>();
 
 			ChangeState(FollowerState.Follow);
@@ -57,8 +61,15 @@ namespace Matsumoto.Character {
 			//GroundUpdate();
 
 			// state
-			var isFollow = FollowStartRange * FollowStartRange > (transform.position - Target.transform.position).sqrMagnitude;
-			ChangeState(isFollow ? FollowerState.Follow : FollowerState.RandomWalk);
+			var isFollow = 
+				FollowStartRange * FollowStartRange < (transform.position - Target.transform.position).sqrMagnitude;
+
+			// めり込みそうなときは変えない
+			if(!isFollow && _detectColliders > 0) {
+				isFollow = true;
+			}
+
+			ChangeState(isFollow ? FollowerState.Follow : FollowerState.Stay);
 
 			var morphVec = _isFly ? 1 : -1;
 			_morph += morphVec * MorphSpeed * Time.deltaTime;
@@ -82,8 +93,8 @@ namespace Matsumoto.Character {
 				case FollowerState.Follow:
 					FollowMove();
 					break;
-				case FollowerState.RandomWalk:
-					RandomMove();
+				case FollowerState.Stay:
+					Stay();
 					break;
 				default:
 					break;
@@ -168,11 +179,39 @@ namespace Matsumoto.Character {
 
 			_rigidbody.velocity = vel;
 
+			var scale = _eye.localScale;
+			if(vec.x > 0) scale.x = 1;
+			if(vec.x < 0) scale.x = -1;
+			_eye.localScale = scale;
+
 		}
 
-		private void RandomMove() {
+		private void Stay() {
 
+			var targetPos = Target.transform.position;
+			var diff = targetPos - transform.position;
+			var vec = diff.normalized;
+			var vel = _rigidbody.velocity;
 
+			if(_isFly) {
+				_isFly = false;
+				MainCollider.enabled = true;
+
+				// スピードの変換
+				_speed = (_speed * vec).x;
+			}
+
+			_speed = Mathf.MoveTowards(_speed, 0, StarStatus.MaxSubSpeed);
+
+			vel.x = _speed;
+			vel.y -= StarStatus.Gravity * Time.deltaTime;
+
+			_rigidbody.velocity = vel;
+
+			// 位置を設定
+			//if(_randomInterval == 0) {
+
+			//}
 
 		}
 
@@ -184,7 +223,7 @@ namespace Matsumoto.Character {
 				case FollowerState.Follow:
 
 					break;
-				case FollowerState.RandomWalk:
+				case FollowerState.Stay:
 					break;
 				default:
 					break;
