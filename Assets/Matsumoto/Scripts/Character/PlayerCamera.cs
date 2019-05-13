@@ -21,6 +21,11 @@ namespace Matsumoto.Character {
 		void Start() {
 			_zPosition = transform.position.z;
 			_screenRatio = new Vector2(1, (float)Screen.height / Screen.width);
+
+			var controller = FindObjectOfType<StageController>();
+
+			controller.OnGameClear += (c) => IsFreeze = true;
+			controller.OnGameOver += (c) => IsFreeze = true;
 		}
 
 		// Update is called once per frame
