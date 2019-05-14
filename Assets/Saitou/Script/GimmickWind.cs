@@ -9,10 +9,17 @@ namespace StarProject2019.Saitou
     /// </summary>
     public class GimmickWind : MonoBehaviour,IGimmickEffect
     {
+        //--------------------------------
+        // private
+        //--------------------------------
+
+        [SerializeField] int windPower;
+        GameObject _target;
+
         /// <summary>
         /// 風のギミック動作
         /// </summary>
-        public void ActiveEffect(GameObject _target)
+        public void ActiveEffect()
         {
             // 対象にRigidbodyが無ければギミックの効果を発動させない
             Rigidbody2D _rg = _target.GetComponent<Rigidbody2D>();
@@ -20,12 +27,13 @@ namespace StarProject2019.Saitou
 
             float moveForceMultiplier = 2.0f;
             // 移動制限
-            _rg.AddForce(moveForceMultiplier * (((Vector2)transform.up * 5.0f) - _rg.velocity));
+            _rg.AddForce(moveForceMultiplier * (((Vector2)transform.up * windPower) - _rg.velocity));
         }
 
         void OnTriggerStay2D(Collider2D _collision)
         {
-            ActiveEffect(_collision.gameObject);
+            _target = _collision.gameObject;
+            ActiveEffect();
         }
     }
 }
