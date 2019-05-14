@@ -289,22 +289,18 @@ namespace Matsumoto.Character {
 
 			g += ToVector(_gravityDirection) * _currentStatus.Gravity * Time.deltaTime; // gravity
 
-			if(v.sqrMagnitude < maxSpeed * maxSpeed) {
-				// move
-				var rollVec = MoveVector * RollSpeed;
-				if(v.sqrMagnitude > rollVec.sqrMagnitude) {
-					var speed = Math.Max(v.magnitude - _currentStatus.MaxSubSpeed, RollSpeed);
-					v = v.normalized * speed;
-				}
-				else {
-					v = MoveVector * RollSpeed;
-				}
-				
-			}
-			else {
-				var vn = v.normalized;
-				v -= vn * _currentStatus.MaxSubSpeed;
-			}
+			var diff = v - MoveVector * RollSpeed;
+			diff = Vector2.MoveTowards(diff, new Vector2(), _currentStatus.MaxSubSpeed*2);
+			v = MoveVector * RollSpeed + diff;
+
+			//if(v.sqrMagnitude < maxSpeed * maxSpeed) {
+			//	// move
+			//	v = MoveVector * RollSpeed;
+			//}
+			//else {
+			//	var vn = v.normalized;
+			//	v -= vn * _currentStatus.MaxSubSpeed;
+			//}
 			vel = g + v;
 
 			// 速度の更新
