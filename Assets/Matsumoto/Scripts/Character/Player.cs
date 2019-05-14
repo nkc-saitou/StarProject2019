@@ -66,9 +66,9 @@ namespace Matsumoto.Character {
 			get { return _moveSpeed; }
 		}
 
-		private Rigidbody2D _rig;
-		public Rigidbody2D Rig {
-			get { return _rig; }
+		private Rigidbody2D _rigidbody;
+		public Rigidbody2D PlayerRig {
+			get { return _rigidbody; }
 		}
 
 		public PlayerState State {
@@ -80,7 +80,7 @@ namespace Matsumoto.Character {
 			get { return _isFreeze; }
 			set {
 				_isFreeze = value;
-				_rig.simulated = !value;
+				_rigidbody.simulated = !value;
 				_animator.SetFloat("Speed", value? _speed / 2 : 0);
 			}
 		}
@@ -92,7 +92,7 @@ namespace Matsumoto.Character {
 			AttackCollider.enabled = false;
 
 			_animator = GetComponent<Animator>();
-			_rig = GetComponent<Rigidbody2D>();
+			_rigidbody = GetComponent<Rigidbody2D>();
 			_eye = transform.Find("Eye");
 			_body = transform.Find("Body").GetComponent<SpriteRenderer>();
 			_bodyWithBone = _body.transform.Find("StarWithBone").GetComponent<SpriteRenderer>();
@@ -164,7 +164,7 @@ namespace Matsumoto.Character {
 				if(_morph == 0 && _jumpWait == 0) {
 					// Jump
 					_jumpWait = JumpWaitTime;
-					_rig.AddForce(ToVector(_gravityDirection) * -MaxChargePower);
+					_rigidbody.AddForce(ToVector(_gravityDirection) * -MaxChargePower);
 
 					Debug.Log(_gravityDirection);
 					var g = Instantiate(JumpEffect, transform);
@@ -272,7 +272,7 @@ namespace Matsumoto.Character {
 			_gravityDirection = State == PlayerState.Star ? CalcGravityDirectionAndMoveVec(input, _gravityDirection, out _moveVec) : Angle.Down;
 			if(old != _gravityDirection) _speed = SpeedConvert(_speed, old, _gravityDirection);
 
-			var vel = _rig.velocity;
+			var vel = _rigidbody.velocity;
 
 			// 重力と入力に分解して計算
 			var g = (Vector2)Vector3.Project(vel, ToVector(_gravityDirection));
@@ -297,7 +297,7 @@ namespace Matsumoto.Character {
 			vel = Vector2.MoveTowards(vel, new Vector2(), _moveSpeed * _currentStatus.AirResistance * Time.deltaTime);
 
 			// 適用
-			_rig.velocity = vel;
+			_rigidbody.velocity = vel;
 
 			// Animation
 			_animator.SetFloat("Speed", _speed / 2);
@@ -380,7 +380,7 @@ namespace Matsumoto.Character {
 			_currentStatus.Gravity = Mathf.Lerp(StarStatus.Gravity, CircleStatus.Gravity, ratio);
 			_currentStatus.AirResistance = Mathf.Lerp(StarStatus.AirResistance, CircleStatus.AirResistance, ratio);
 
-			_rig.sharedMaterial = _currentStatus.Material;
+			_rigidbody.sharedMaterial = _currentStatus.Material;
 
 			// Animation
 			_animator.SetFloat("Morph", ratio);
@@ -432,7 +432,7 @@ namespace Matsumoto.Character {
 
 			if(_gravityDirection == Angle.Up) _speed *= -1;
 
-			_rig.AddForce(input * _currentStatus.DashPower);
+			_rigidbody.AddForce(input * _currentStatus.DashPower);
 			_isDash = true;
 
 			// 攻撃判定
@@ -492,19 +492,19 @@ namespace Matsumoto.Character {
 		IEnumerator HitStop(float time) {
 
 			// 保存
-			var vel = _rig.velocity;
+			var vel = _rigidbody.velocity;
 
 			IsFreeze = true;
-			_rig.velocity = new Vector2();
-			_rig.isKinematic = true;
+			_rigidbody.velocity = new Vector2();
+			_rigidbody.isKinematic = true;
 			_animator.SetFloat("Speed", 0);
 
 			yield return new WaitForSeconds(time);
 
 			// 復帰
 			IsFreeze = false;
-			_rig.velocity = vel;
-			_rig.isKinematic = false;
+			_rigidbody.velocity = vel;
+			_rigidbody.isKinematic = false;
 		}
 
 		private void OnTriggerEnter2D(Collider2D collision) {

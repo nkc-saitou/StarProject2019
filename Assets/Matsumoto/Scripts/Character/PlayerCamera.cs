@@ -21,6 +21,11 @@ namespace Matsumoto.Character {
 		void Start() {
 			_zPosition = transform.position.z;
 			_screenRatio = new Vector2(1, (float)Screen.height / Screen.width);
+
+			var controller = FindObjectOfType<StageController>();
+
+			controller.OnGameClear += (c) => IsFreeze = true;
+			controller.OnGameOver += (c) => IsFreeze = true;
 		}
 
 		// Update is called once per frame
@@ -35,7 +40,7 @@ namespace Matsumoto.Character {
 			var target = TargetPlayer.transform.position;
 
 			// 移動方向に寄せる
-			var targetOffset = TargetPlayer.Rig.velocity.normalized * FollowView;
+			var targetOffset = TargetPlayer.PlayerRig.velocity.normalized * FollowView;
 			var magSpeed = Vector2.Angle(_angleOffset, targetOffset) / 360 * 2 + 1;
 			_angleOffset = Vector3.MoveTowards(_angleOffset, targetOffset, FollowSpeed * Time.deltaTime * magSpeed);
 

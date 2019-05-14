@@ -12,6 +12,8 @@ namespace StarProject2019.Saitou
         //--------------------------------
         // private
         //--------------------------------
+
+        [SerializeField] int windPower;
         GameObject _target;
 
         /// <summary>
@@ -25,7 +27,7 @@ namespace StarProject2019.Saitou
 
             float moveForceMultiplier = 2.0f;
             // 移動制限
-            _rg.AddForce(moveForceMultiplier * (((Vector2)transform.up * 5.0f) - _rg.velocity));
+            _rg.AddForce(moveForceMultiplier * (((Vector2)transform.up * windPower) - _rg.velocity));
         }
 
         void OnTriggerStay2D(Collider2D _collision)
