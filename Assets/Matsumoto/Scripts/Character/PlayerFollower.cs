@@ -33,7 +33,6 @@ namespace Matsumoto.Character {
 
 		private int _detectColliders;
 		private float _speed = 0.0f;
-		private float _randomInterval = 0.0f;
 		private float _changeInterval = 0.0f;
 		private float _morph = 0;
 		private bool _isGround = true;
