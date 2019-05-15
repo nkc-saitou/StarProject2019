@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class StageNode : MonoBehaviour {
 
+	private const string StageBasePath = "Stages/";
+
 	public StageNode NextStage;
 	public string TargetStageName;
 
@@ -15,5 +17,13 @@ public class StageNode : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		
+	}
+
+
+	public void OnDrawGizmos() {
+		if(!NextStage) return;
+
+		Gizmos.color = Color.white;
+		Gizmos.DrawLine(transform.position, NextStage.transform.position);
 	}
 }

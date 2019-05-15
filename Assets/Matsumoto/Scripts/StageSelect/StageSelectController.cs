@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class StageSelectController : MonoBehaviour {
 
-	
+	public StageNode FirstStage;
 
 	// Use this for initialization
 	void Start () {
