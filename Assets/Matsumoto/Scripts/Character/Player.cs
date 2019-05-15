@@ -37,8 +37,9 @@ namespace Matsumoto.Character {
 		public ParticleSystem MoveEffect;
 		public ParticleSystem JumpEffect;
 		public ParticleSystem AttackEffect;
-		public ParticleSystem DashEffect;
+		public ParticleSystem HitEffect;
 
+		private StageController _stageController;
 		private Animator _animator;
 		private Transform _eye;
 		private SpriteRenderer _body;
@@ -49,26 +50,26 @@ namespace Matsumoto.Character {
 		private bool _isGround = false;
 		private PlayerStatus _currentStatus;
 
-		private float _speed = 0;
 		private Angle _gravityDirection = Angle.Down;
 		private byte _ground = 0;
 		private float _morph = 0;
 		private float _attackWait = 0;
 		private float _jumpWait = 0;
 
-		private Vector2 _moveVec;
+		public float RollSpeed {
+			get; private set;
+		}
+
 		public Vector2 MoveVector {
-			get { return _moveVec; }
+			get; private set;
 		}
 
-		private float _moveSpeed;
 		public float MoveSpeed {
-			get { return _moveSpeed; }
+			get; private set;
 		}
 
-		private Rigidbody2D _rigidbody;
 		public Rigidbody2D PlayerRig {
-			get { return _rigidbody; }
+			get; private set;
 		}
 
 		public PlayerState State {
@@ -80,8 +81,8 @@ namespace Matsumoto.Character {
 			get { return _isFreeze; }
 			set {
 				_isFreeze = value;
-				_rigidbody.simulated = !value;
-				_animator.SetFloat("Speed", value? _speed / 2 : 0);
+				PlayerRig.simulated = !value;
+				_animator.SetFloat("Speed", value ? RollSpeed / 2 : 0);
 			}
 		}
 
@@ -91,8 +92,9 @@ namespace Matsumoto.Character {
 
 			AttackCollider.enabled = false;
 
+			_stageController = FindObjectOfType<StageController>();
 			_animator = GetComponent<Animator>();
-			_rigidbody = GetComponent<Rigidbody2D>();
+			PlayerRig = GetComponent<Rigidbody2D>();
 			_eye = transform.Find("Eye");
 			_body = transform.Find("Body").GetComponent<SpriteRenderer>();
 			_bodyWithBone = _body.transform.Find("StarWithBone").GetComponent<SpriteRenderer>();
@@ -118,6 +120,8 @@ namespace Matsumoto.Character {
 		}
 
 		private void Start() {
+
+			AttackEffect.Stop();
 
 			OnChangeState += (oldState, newState) => {
 
@@ -164,7 +168,7 @@ namespace Matsumoto.Character {
 				if(_morph == 0 && _jumpWait == 0) {
 					// Jump
 					_jumpWait = JumpWaitTime;
-					_rigidbody.AddForce(ToVector(_gravityDirection) * -MaxChargePower);
+					PlayerRig.AddForce(ToVector(_gravityDirection) * -MaxChargePower);
 
 					Debug.Log(_gravityDirection);
 					var g = Instantiate(JumpEffect, transform);
@@ -183,7 +187,7 @@ namespace Matsumoto.Character {
 			}
 
 			// エフェクト操作
-			var main = DashEffect.main;
+			var main = AttackEffect.main;
 			main.startRotation = new ParticleSystem.MinMaxCurve(_body.transform.eulerAngles.z);
 		}
 
@@ -256,51 +260,60 @@ namespace Matsumoto.Character {
 			if(_gravityDirection == Angle.Right)
 				addSpeed = input.y;
 
-			if(addSpeed != 0) _speed += addSpeed * _currentStatus.MaxAddSpeed;
-			else _speed = Mathf.MoveTowards(_speed, 0, _currentStatus.MaxSubSpeed);
+			if(addSpeed != 0) RollSpeed += addSpeed * _currentStatus.MaxAddSpeed;
+			else RollSpeed = Mathf.MoveTowards(RollSpeed, 0, _currentStatus.MaxSubSpeed);
 
-			if(Mathf.Abs(_speed) < _currentStatus.MaxSpeed) {
+			if(Mathf.Abs(RollSpeed) < _currentStatus.MaxSpeed) {
 				_isDash = false;
 			}
 
 			var maxSpeed = _isDash ? _currentStatus.MaxDashSpeed : _currentStatus.MaxSpeed;
-			_speed = Mathf.Clamp(_speed, -maxSpeed, maxSpeed);
+
+			// 最大速度を制限
+			RollSpeed = Mathf.Clamp(RollSpeed, -maxSpeed, maxSpeed);
 
 			// move and gravity
-			_moveVec = new Vector2(1, 0);
+			MoveVector = new Vector2(1, 0);
 			var old = _gravityDirection;
-			_gravityDirection = State == PlayerState.Star ? CalcGravityDirectionAndMoveVec(input, _gravityDirection, out _moveVec) : Angle.Down;
-			if(old != _gravityDirection) _speed = SpeedConvert(_speed, old, _gravityDirection);
+			var moveVec = MoveVector;
+			_gravityDirection = State == PlayerState.Star ? CalcGravityDirectionAndMoveVec(input, _gravityDirection, out moveVec) : Angle.Down;
+			MoveVector = moveVec;
 
-			var vel = _rigidbody.velocity;
+			if(old != _gravityDirection) RollSpeed = SpeedConvert(RollSpeed, old, _gravityDirection);
+
+			var vel = PlayerRig.velocity;
 
 			// 重力と入力に分解して計算
 			var g = (Vector2)Vector3.Project(vel, ToVector(_gravityDirection));
-			var v = (Vector2)Vector3.Project(vel, _moveVec);
+			var v = (Vector2)Vector3.Project(vel, MoveVector);
 
 			g += ToVector(_gravityDirection) * _currentStatus.Gravity * Time.deltaTime; // gravity
 
-			if(v.sqrMagnitude < maxSpeed * maxSpeed) {
-				// move
-				v = _moveVec * _speed;
-			}
-			else {
-				var vn = v.normalized;
-				v -= vn * _currentStatus.MaxSubSpeed;
-			}
+			var diff = v - MoveVector * RollSpeed;
+			diff = Vector2.MoveTowards(diff, new Vector2(), _currentStatus.MaxSubSpeed*2);
+			v = MoveVector * RollSpeed + diff;
+
+			//if(v.sqrMagnitude < maxSpeed * maxSpeed) {
+			//	// move
+			//	v = MoveVector * RollSpeed;
+			//}
+			//else {
+			//	var vn = v.normalized;
+			//	v -= vn * _currentStatus.MaxSubSpeed;
+			//}
 			vel = g + v;
 
 			// 速度の更新
-			_moveSpeed = vel.magnitude;
+			MoveSpeed = vel.magnitude;
 
 			// 空気抵抗
-			vel = Vector2.MoveTowards(vel, new Vector2(), _moveSpeed * _currentStatus.AirResistance * Time.deltaTime);
+			vel = Vector2.MoveTowards(vel, new Vector2(), MoveSpeed * _currentStatus.AirResistance * Time.deltaTime);
 
 			// 適用
-			_rigidbody.velocity = vel;
+			PlayerRig.velocity = vel;
 
 			// Animation
-			_animator.SetFloat("Speed", _speed / 2);
+			_animator.SetFloat("Speed", RollSpeed / 2);
 
 			var scale = _eye.localScale;
 			if(addSpeed > 0) scale.x = 1;
@@ -380,7 +393,7 @@ namespace Matsumoto.Character {
 			_currentStatus.Gravity = Mathf.Lerp(StarStatus.Gravity, CircleStatus.Gravity, ratio);
 			_currentStatus.AirResistance = Mathf.Lerp(StarStatus.AirResistance, CircleStatus.AirResistance, ratio);
 
-			_rigidbody.sharedMaterial = _currentStatus.Material;
+			PlayerRig.sharedMaterial = _currentStatus.Material;
 
 			// Animation
 			_animator.SetFloat("Morph", ratio);
@@ -424,15 +437,15 @@ namespace Matsumoto.Character {
 			var input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")).normalized;
 
 			if(input.x > 0) {
-				_speed = _currentStatus.MaxDashSpeed;
+				RollSpeed = _currentStatus.MaxDashSpeed;
 			}
 			else if(input.x < 0) {
-				_speed = -_currentStatus.MaxDashSpeed;
+				RollSpeed = -_currentStatus.MaxDashSpeed;
 			}
 
-			if(_gravityDirection == Angle.Up) _speed *= -1;
+			if(_gravityDirection == Angle.Up) RollSpeed *= -1;
 
-			_rigidbody.AddForce(input * _currentStatus.DashPower);
+			PlayerRig.AddForce(input * _currentStatus.DashPower);
 			_isDash = true;
 
 			// 攻撃判定
@@ -449,10 +462,10 @@ namespace Matsumoto.Character {
 
 		private IEnumerator AttackCollision() {
 			AttackCollider.enabled = true;
-			DashEffect.Play();
+			AttackEffect.Play();
 			yield return new WaitForSeconds(AttackHitTime);
 			AttackCollider.enabled = false;
-			DashEffect.Stop();
+			AttackEffect.Stop();
 		}
 
 		private float SpeedConvert(float speed, Angle from, Angle to) {
@@ -492,19 +505,19 @@ namespace Matsumoto.Character {
 		IEnumerator HitStop(float time) {
 
 			// 保存
-			var vel = _rigidbody.velocity;
+			var vel = PlayerRig.velocity;
 
 			IsFreeze = true;
-			_rigidbody.velocity = new Vector2();
-			_rigidbody.isKinematic = true;
+			PlayerRig.velocity = new Vector2();
+			PlayerRig.isKinematic = true;
 			_animator.SetFloat("Speed", 0);
 
 			yield return new WaitForSeconds(time);
 
 			// 復帰
 			IsFreeze = false;
-			_rigidbody.velocity = vel;
-			_rigidbody.isKinematic = false;
+			PlayerRig.velocity = vel;
+			PlayerRig.isKinematic = false;
 		}
 
 		private void OnTriggerEnter2D(Collider2D collision) {
@@ -512,7 +525,7 @@ namespace Matsumoto.Character {
 			var enemy = collision.gameObject.GetComponent<IEnemy>();
 			if(enemy == null) return;
 
-			var g = Instantiate(AttackEffect, transform.position, transform.rotation);
+			var g = Instantiate(HitEffect, transform.position, transform.rotation);
 			Destroy(g.gameObject, 5);
 
 			enemy.ApplyDamage();
@@ -529,6 +542,12 @@ namespace Matsumoto.Character {
 
 			Gizmos.color = Color.yellow;
 			Gizmos.DrawSphere(transform.position, 0.5f);
+		}
+
+		public void ApplyDamage(GameObject damager, DamageType type) {
+
+			_stageController.GameOver();
+
 		}
 	}
 }
