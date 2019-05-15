@@ -156,8 +156,7 @@ namespace Matsumoto.Character {
 			if(CheckCanAttack() && Input.GetButtonDown("Attack")) {
 				Attack();
 				_attackWait = AttackWaitTime;
-				// 地上は無限に使える
-				_canDash = _isGround;
+				_canDash = false;
 			}
 
 			var morph = _morph;
