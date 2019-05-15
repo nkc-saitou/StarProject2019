@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Matsumoto.Gimmick;
 
-public class Niedle : MonoBehaviour
+public class Niedle : GimmickChip
 {
 	// Use this for initialization
 	void Start () {
@@ -23,7 +24,8 @@ public class Niedle : MonoBehaviour
         // プレイヤーでないならリターン
         var player = col.gameObject.GetComponent<Matsumoto.Character.Player>();
         if (player == null) return;
-        
 
+        // プレイヤーにダメージを与える
+        player.ApplyDamage(gameObject, Matsumoto.Character.DamageType.Gimmick);
     }
 }
