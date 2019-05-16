@@ -22,7 +22,7 @@ namespace Matsumoto.Character {
 		Left = 128,
 	}
 
-	public class Player : MonoBehaviour {
+	public class Player : MonoBehaviour, IDamageable {
 
 		public PlayerStatus StarStatus;
 		public PlayerStatus CircleStatus;
@@ -82,8 +82,11 @@ namespace Matsumoto.Character {
 			set {
 				_isFreeze = value;
 				PlayerRig.simulated = !value;
-				_animator.SetFloat("Speed", value ? RollSpeed / 2 : 0);
 			}
+		}
+
+		public bool IsRotate {
+			get; set;
 		}
 
 		public event Action<PlayerState, PlayerState> OnChangeState;
@@ -203,6 +206,8 @@ namespace Matsumoto.Character {
 		private void FixedUpdate() {
 
 			Move();
+
+			AnimationUpdate();
 		}
 
 		private void CheckBlockSide() {
@@ -292,14 +297,6 @@ namespace Matsumoto.Character {
 			diff = Vector2.MoveTowards(diff, new Vector2(), _currentStatus.MaxSubSpeed*2);
 			v = MoveVector * RollSpeed + diff;
 
-			//if(v.sqrMagnitude < maxSpeed * maxSpeed) {
-			//	// move
-			//	v = MoveVector * RollSpeed;
-			//}
-			//else {
-			//	var vn = v.normalized;
-			//	v -= vn * _currentStatus.MaxSubSpeed;
-			//}
 			vel = g + v;
 
 			// 速度の更新
@@ -312,8 +309,6 @@ namespace Matsumoto.Character {
 			PlayerRig.velocity = vel;
 
 			// Animation
-			_animator.SetFloat("Speed", RollSpeed / 2);
-
 			var scale = _eye.localScale;
 			if(addSpeed > 0) scale.x = 1;
 			if(addSpeed < 0) scale.x = -1;
@@ -328,6 +323,15 @@ namespace Matsumoto.Character {
 				scale.y = 1;
 			}
 			_eye.localScale = scale;
+		}
+
+		private void AnimationUpdate() {
+
+			var speed = RollSpeed / 2;
+			if(IsRotate) speed = 0;
+			if(IsFreeze) speed = 0;
+
+			_animator.SetFloat("Speed", speed);
 		}
 
 		private Angle CalcGravityDirectionAndMoveVec(Vector2 input, Angle currentGravity, out Vector2 moveVec) {
@@ -509,7 +513,7 @@ namespace Matsumoto.Character {
 			IsFreeze = true;
 			PlayerRig.velocity = new Vector2();
 			PlayerRig.isKinematic = true;
-			_animator.SetFloat("Speed", 0);
+			AnimationUpdate();
 
 			yield return new WaitForSeconds(time);
 
@@ -517,6 +521,7 @@ namespace Matsumoto.Character {
 			IsFreeze = false;
 			PlayerRig.velocity = vel;
 			PlayerRig.isKinematic = false;
+			AnimationUpdate();
 		}
 
 		private void OnTriggerEnter2D(Collider2D collision) {
@@ -543,7 +548,7 @@ namespace Matsumoto.Character {
 			Gizmos.DrawSphere(transform.position, 0.5f);
 		}
 
-		public void ApplyDamage(GameObject damager, DamageType type) {
+		public void ApplyDamage(GameObject damager, DamageType type, float power) {
 
 			_stageController.GameOver();
 
