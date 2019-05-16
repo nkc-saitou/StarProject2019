@@ -10,8 +10,16 @@ public class StageController : MonoBehaviour {
 	public event Action<StageController> OnGameClear;
 	public event Action<StageController> OnGameOver;
 
+	private void Awake() {
+		// ステージ生成
+		var stagePath = "";
+		GameData.Instance.GetData(StageSelectController.LoadSceneKey, ref stagePath);
+		Instantiate(Resources.Load("Stages/" + stagePath));
+	}
+
 	// Use this for initialization
 	void Start () {
+
 		GameStart();
 	}
 	
