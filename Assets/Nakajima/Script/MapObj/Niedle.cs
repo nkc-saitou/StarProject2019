@@ -26,6 +26,6 @@ public class Niedle : GimmickChip
         if (player == null) return;
 
         // プレイヤーにダメージを与える
-        player.ApplyDamage(gameObject, Matsumoto.Character.DamageType.Gimmick);
+        player.ApplyDamage(gameObject, DamageType.Gimmick);
     }
 }

@@ -548,7 +548,7 @@ namespace Matsumoto.Character {
 			Gizmos.DrawSphere(transform.position, 0.5f);
 		}
 
-		public void ApplyDamage(GameObject damager, DamageType type, float power) {
+		public void ApplyDamage(GameObject damager, DamageType type, float power = 1.0f) {
 
 			_stageController.GameOver();
 
