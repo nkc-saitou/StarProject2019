@@ -22,7 +22,7 @@ namespace Matsumoto.Character {
 		Left = 128,
 	}
 
-	public class Player : MonoBehaviour, IDamageable {
+	public class Player : MonoBehaviour, IDamageable, IPauseEventReceivable {
 
 		public PlayerStatus StarStatus;
 		public PlayerStatus CircleStatus;
@@ -120,6 +120,11 @@ namespace Matsumoto.Character {
 			};
 
 			IsFreeze = true;
+
+			//ポーズ追加
+			var pause = PauseSystem.Instance;
+			pause.AddPauseList(this);
+
 		}
 
 		private void Start() {
@@ -551,6 +556,22 @@ namespace Matsumoto.Character {
 		public void ApplyDamage(GameObject damager, DamageType type, float power) {
 
 			_stageController.GameOver();
+
+		}
+
+		public void OnPauseBegin() {
+			
+		}
+
+		public void OnPauseEnd() {
+
+		}
+
+		public void OnResumeBegin() {
+
+		}
+
+		public void OnResumeEnd() {
 
 		}
 	}

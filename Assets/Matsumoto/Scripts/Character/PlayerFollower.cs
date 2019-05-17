@@ -216,11 +216,6 @@ namespace Matsumoto.Character {
 
 			_rigidbody.velocity = vel;
 
-			// 位置を設定
-			//if(_randomInterval == 0) {
-
-			//}
-
 		}
 
 		private void ChangeState(FollowerState state) {

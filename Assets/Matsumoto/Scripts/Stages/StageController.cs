@@ -17,15 +17,15 @@ public class StageController : MonoBehaviour {
 	public event Action<StageController> OnGameClear;
 	public event Action<StageController> OnGameOver;
 
+	public bool IsCreateStage = true;
+
 	public GameState State {
 		get; private set;
 	} = GameState.StartUp;
 
 	private void Awake() {
 		// ステージ生成
-		var stagePath = "";
-		GameData.Instance.GetData(StageSelectController.LoadSceneKey, ref stagePath);
-		Instantiate(Resources.Load("Stages/" + stagePath));
+		CreateStage();
 	}
 
 	// Use this for initialization
@@ -35,7 +35,10 @@ public class StageController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		
+
+		if(Input.GetKeyDown(KeyCode.Escape))
+			PauseSystem.Instance.IsPause = !PauseSystem.Instance.IsPause;
+
 		if(State == GameState.GameOver) {
 			//リトライ
 			if(Input.GetButtonDown("Attack")) {
@@ -43,6 +46,15 @@ public class StageController : MonoBehaviour {
 			}
 		}
 
+	}
+
+	private void CreateStage() {
+
+		if(!IsCreateStage) return;
+
+		var stagePath = "TestStage";
+		GameData.Instance.GetData(StageSelectController.LoadSceneKey, ref stagePath);
+		Instantiate(Resources.Load("Stages/" + stagePath));
 	}
 
 	public void GameStart() {
