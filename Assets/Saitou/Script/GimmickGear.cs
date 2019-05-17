@@ -37,8 +37,6 @@ namespace StarProject2019.Saitou
         // 回転量
         float _rotationAmount = 0;
 
-        GearRotateDir memoryDir;
-
         //------------------------------------------
         // プロパティ
         //------------------------------------------
@@ -83,6 +81,7 @@ namespace StarProject2019.Saitou
         void Update()
         {
             GearRotate();
+            GearReturn();
         }
 
         /// <summary>
@@ -90,25 +89,22 @@ namespace StarProject2019.Saitou
         /// </summary>
         void GearRotate()
         {
-            // 移動方向(プレイヤーの回転と反対方向に回転)
-            if (_player.RollSpeed != 0)
-                RotateDir = (_player.RollSpeed > 0 ? GearRotateDir.Left : GearRotateDir.Right);
-
             // 現在の回転量がMaxで指定してあった回転量を上回る場合は処理をしない
-            if (IsRotate() == false)
+            if (IsRotate() == false || _player.State != PlayerState.Star)
             {
+                _player.IsRotate = true;
                 // アニメーション
                 _animator.SetFloat("Speed", 0);
                 return;
             }
+
+            _player.IsRotate = false;
 
             // 回転速度
             RollSpeed = (_player.RollSpeed < 0 ? _player.RollSpeed * -1 : _player.RollSpeed);
 
             // アニメーション
             _animator.SetFloat("Speed", State == GearState.Roll ? RollSpeed / 2 * (int)RotateDir : 0);
-
-            ResetRotateAmount();
 
             // 回転量
             if (State == GearState.Roll)
@@ -118,6 +114,37 @@ namespace StarProject2019.Saitou
 
         }
 
+        /// <summary>
+        /// 歯車が巻き戻っている
+        /// </summary>
+        void GearReturn()
+        {
+            if (_rotationAmount == 0 || State == GearState.Roll) return;
+
+            // 右方向に回していた場合
+            if (_rotationAmount > 0)
+            {
+                _rotationAmount -= Time.deltaTime;
+                _animator.SetFloat("Speed", -0.1f);
+
+                // 値がマイナスになったら値を０に
+                if (_rotationAmount < 0) _rotationAmount = 0;
+            }
+            // 左方向に回していた場合
+            else if(_rotationAmount < 0)
+            {
+                _rotationAmount += Time.deltaTime;
+                _animator.SetFloat("Speed", 0.1f);
+
+                // 値がプラスになったら値を０
+                if (_rotationAmount > 0) _rotationAmount = 0;
+            }
+        }
+
+        /// <summary>
+        /// 回すことが出来るかどうか
+        /// </summary>
+        /// <returns></returns>
         bool IsRotate()
         {
             if (_rotationAmount >= MaxRotateAmount && RotateDir == GearRotateDir.Right) return false;
@@ -125,16 +152,14 @@ namespace StarProject2019.Saitou
             else return true;
         }
 
-        void ResetRotateAmount()
-        {
-            if (memoryDir != RotateDir) _rotationAmount = 0;
-            memoryDir = RotateDir;
-        }
-
         private void OnCollisionStay2D(Collision2D _collision)
         {
             // 当たっているのがプレイヤー以外であれば処理しない
             if (_collision.gameObject != _player.gameObject) return;
+
+            // 移動方向(プレイヤーの回転と反対方向に回転)
+            if (_player.RollSpeed != 0)
+                RotateDir = (_player.RollSpeed > 0 ? GearRotateDir.Left : GearRotateDir.Right);
 
             if (_player.RollSpeed != 0) State = GearState.Roll;
             else State = GearState.Free;
@@ -143,6 +168,8 @@ namespace StarProject2019.Saitou
         private void OnCollisionExit2D(Collision2D collision)
         {
             State = GearState.Free;
+
+            _player.IsRotate = false;
         }
     }
 }

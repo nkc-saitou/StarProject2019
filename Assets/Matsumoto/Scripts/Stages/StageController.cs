@@ -21,12 +21,12 @@ public class StageController : MonoBehaviour {
 		get; private set;
 	} = GameState.StartUp;
 
-	private void Awake() {
-		// ステージ生成
-		var stagePath = "";
-		GameData.Instance.GetData(StageSelectController.LoadSceneKey, ref stagePath);
-		Instantiate(Resources.Load("Stages/" + stagePath));
-	}
+	//private void Awake() {
+	//	// ステージ生成
+	//	var stagePath = "";
+	//	GameData.Instance.GetData(StageSelectController.LoadSceneKey, ref stagePath);
+	//	Instantiate(Resources.Load("Stages/" + stagePath));
+	//}
 
 	// Use this for initialization
 	void Start () {
