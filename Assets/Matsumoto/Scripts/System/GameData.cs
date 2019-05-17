@@ -6,8 +6,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 /// <summary>
 /// データを保存しておく
-/// 参考
-/// http://kan-kikuchi.hatenablog.com/entry/Json_SaveData
 /// </summary>
 [Serializable]
 public class GameData : SingletonMonoBehaviour<GameData> {

@@ -13,6 +13,7 @@ namespace Matsumoto.Character {
 		public float FollowSpeed = 1;
 		public bool IsFreeze = false;
 
+		private Vector2 _prevPosition;
 		private float _zPosition;
 		private Vector2 _angleOffset;
 		private Vector2 _screenRatio;
@@ -40,7 +41,10 @@ namespace Matsumoto.Character {
 			var target = TargetPlayer.transform.position;
 
 			// 移動方向に寄せる
-			var targetOffset = TargetPlayer.PlayerRig.velocity.normalized * FollowView;
+			var targetOffset = new Vector2();
+			var diff = (Vector2)TargetPlayer.transform.position - _prevPosition;
+			targetOffset = diff.normalized * FollowView;
+
 			var magSpeed = Vector2.Angle(_angleOffset, targetOffset) / 360 * 2 + 1;
 			_angleOffset = Vector3.MoveTowards(_angleOffset, targetOffset, FollowSpeed * Time.deltaTime * magSpeed);
 
@@ -51,13 +55,15 @@ namespace Matsumoto.Character {
 
 			// 追従
 			transform.position = Vector3.Lerp(transform.position, target, CameraSpeed);
+
+			_prevPosition = TargetPlayer.transform.position;
 		}
 
 		public void SetTarget(Player target) {
 
 			var pos = target.transform.position;
 			pos.z = transform.position.z;
-			transform.position = pos;
+			transform.position = _prevPosition = pos;
 			TargetPlayer = target;
 		}
 	}
