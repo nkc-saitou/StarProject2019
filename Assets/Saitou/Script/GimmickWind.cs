@@ -19,6 +19,10 @@ namespace StarProject2019.Saitou
 
         Player _player;
 
+        //--------------------------------
+        // 関数
+        //--------------------------------
+
         void Start()
         {
             _player = FindObjectOfType<Player>();

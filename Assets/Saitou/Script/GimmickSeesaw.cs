@@ -27,7 +27,7 @@ namespace StarProject2019.Saitou
         SeesawState _seesawState;
 
         //-----------------------------------------
-        // function
+        // 関数
         //-----------------------------------------
 
         // Use this for initialization
@@ -40,20 +40,8 @@ namespace StarProject2019.Saitou
             };
         }
 
-        // Update is called once per frame
-        void Update()
-        {
-
-        }
-
-        void Test()
-        {
-
-        }
-
         public void ActiveEffect()
         {
-            Debug.Log("ok");
             // 左右どちらに乗っているオブジェクトを飛ばすか、配列添字番号を取得する
             // 上に飛ばすオブジェクトは、現在傾いている方とは反対の方に乗っている
             int _flyObjIndex = 
@@ -66,7 +54,6 @@ namespace StarProject2019.Saitou
 
             for (int i = 0; i < _rideArray[_flyObjIndex].RideObject.Count; i++)
             {
-                Debug.Log("ok");
                 Rigidbody2D rg = _rideArray[_flyObjIndex].RideObject[i].GetComponent<Rigidbody2D>();
 
                 // 移動制限
