@@ -10,6 +10,11 @@ public class PauseSystem : SingletonMonoBehaviour<PauseSystem> {
 	private List<IPauseEventReceivable> _pauseReceivables = new List<IPauseEventReceivable>();
 	private List<Rigidbody2DInfo> _pauseRigidbody2DInfos = new List<Rigidbody2DInfo>();
 	private List<Animator> _pauseAnimators = new List<Animator>();
+	private List<ParticleSystem> _pauseParticles = new List<ParticleSystem>();
+
+	public bool StopParticles {
+		get; set;
+	} = true;
 
 	private bool _isPause;
 	public bool IsPause {
@@ -42,6 +47,8 @@ public class PauseSystem : SingletonMonoBehaviour<PauseSystem> {
 		_pauseAnimators.AddRange(target.GetComponentsInChildren<Animator>());
 
 		// TODO _pauseReceivablesに追加
+		var receivable = target.GetComponent<IPauseEventReceivable>();
+		if(receivable != null) _pauseReceivables.Add(receivable);
 
 		if(addChilds) {
 			_pauseMonoBehaviours.AddRange(target.GetComponentsInChildren<MonoBehaviour>());
@@ -57,6 +64,11 @@ public class PauseSystem : SingletonMonoBehaviour<PauseSystem> {
 		if(_isPause) return;
 		_isPause = true;
 
+		// インターフェース呼び出し
+		foreach(var item in _pauseReceivables) {
+			item.OnPauseBegin();
+		}
+
 		// Rigidbodyの停止
 		foreach(var item in _pauseRigidbody2DInfos) {
 			// 速度、角速度も保存しておく
@@ -69,20 +81,36 @@ public class PauseSystem : SingletonMonoBehaviour<PauseSystem> {
 			item.enabled = false;
 		}
 
+		// パーティクルの停止
+		if(StopParticles) {
+			_pauseParticles.Clear();
+			var predicate = new Predicate<ParticleSystem>(x => x.isPlaying);
+			_pauseParticles.AddRange(Array.FindAll(FindObjectsOfType<ParticleSystem>(), predicate));
+			foreach(var item in _pauseParticles) {
+				item.Pause();
+			}
+		}
+
 		// MonoBehaviourの停止
 		foreach(var item in _pauseMonoBehaviours) {
-			IPauseEventReceivable e = item.GetComponent<IPauseEventReceivable>());
-			e?.OnPauseBegin();
-
 			item.enabled = false;
+			
+		}
 
-			e?.OnPauseEnd();
+		// インターフェース呼び出し
+		foreach(var item in _pauseReceivables) {
+			item.OnPauseEnd();
 		}
 	}
 
 	public void Resume() {
 		if(!_isPause) return;
 		_isPause = false;
+
+		// インターフェース呼び出し
+		foreach(var item in _pauseReceivables) {
+			item.OnResumeBegin();
+		}
 
 		// Rigidbodyの再開
 		foreach(var item in _pauseRigidbody2DInfos) {
@@ -95,14 +123,21 @@ public class PauseSystem : SingletonMonoBehaviour<PauseSystem> {
 			item.enabled = true;
 		}
 
+		// パーティクルの再開
+		if(StopParticles) {
+			foreach(var item in _pauseParticles) {
+				item.Play();
+			}
+		}
+
 		// MonoBehaviourの再開
 		foreach(var item in _pauseMonoBehaviours) {
-			IPauseEventReceivable e = item.GetComponent<IPauseEventReceivable>());
-			e?.OnResumeBegin();
-
 			item.enabled = true;
+		}
 
-			e?.OnResumeEnd();
+		// インターフェース呼び出し
+		foreach(var item in _pauseReceivables) {
+			item.OnResumeEnd();
 		}
 	}
 }

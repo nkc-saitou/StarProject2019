@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using UnityEngine.Experimental.U2D.Animation;
 
 namespace Matsumoto.Character {
 
@@ -22,7 +23,7 @@ namespace Matsumoto.Character {
 		Left = 128,
 	}
 
-	public class Player : MonoBehaviour, IDamageable, IPauseEventReceivable {
+	public class Player : MonoBehaviour, IDamageable {
 
 		public PlayerStatus StarStatus;
 		public PlayerStatus CircleStatus;
@@ -34,6 +35,7 @@ namespace Matsumoto.Character {
 		public float JumpWaitTime = 0.2f;
 
 		public Collider2D AttackCollider;
+		public DynamicBone PlayerModel;
 		public ParticleSystem MoveEffect;
 		public ParticleSystem JumpEffect;
 		public ParticleSystem AttackEffect;
@@ -124,7 +126,6 @@ namespace Matsumoto.Character {
 			//ポーズ追加
 			var pause = PauseSystem.Instance;
 			pause.AddPauseList(this);
-
 		}
 
 		private void Start() {
@@ -457,7 +458,7 @@ namespace Matsumoto.Character {
 			_isDash = true;
 
 			// 攻撃判定
-			StartCoroutine(AttackCollision());
+			this.StartPausableCoroutine(AttackCollision());
 		}
 
 		private void ChangeState(PlayerState state, bool isForce = false) {
@@ -471,7 +472,9 @@ namespace Matsumoto.Character {
 		private IEnumerator AttackCollision() {
 			AttackCollider.enabled = true;
 			AttackEffect.Play();
+			Debug.Log("A");
 			yield return new WaitForSeconds(AttackHitTime);
+			Debug.Log("AE");
 			AttackCollider.enabled = false;
 			AttackEffect.Stop();
 		}
@@ -556,22 +559,6 @@ namespace Matsumoto.Character {
 		public void ApplyDamage(GameObject damager, DamageType type, float power) {
 
 			_stageController.GameOver();
-
-		}
-
-		public void OnPauseBegin() {
-			
-		}
-
-		public void OnPauseEnd() {
-
-		}
-
-		public void OnResumeBegin() {
-
-		}
-
-		public void OnResumeEnd() {
 
 		}
 	}
