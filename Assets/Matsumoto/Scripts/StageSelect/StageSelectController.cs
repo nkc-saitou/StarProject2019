@@ -60,7 +60,7 @@ public class StageSelectController : MonoBehaviour {
 	private void MoveScene() {
 		Debug.Log("MoveScene");
 		GameData.Instance.SetData(LoadSceneKey, _currentSelectedStage.TargetStageName);
-		SceneMover.MoveScene("GameScene");
+		SceneChanger.Instance.MoveScene("GameScene", 1.0f, 1.0f, SceneChangeType.BlackFade);
 	}
 
 	private void MovePlayer(float position) {

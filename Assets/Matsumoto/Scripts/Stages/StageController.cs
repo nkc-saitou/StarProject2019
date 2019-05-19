@@ -42,7 +42,7 @@ public class StageController : MonoBehaviour {
 		if(State == GameState.GameOver) {
 			//リトライ
 			if(Input.GetButtonDown("Attack")) {
-				SceneMover.MoveScene("GameScene");
+				SceneChanger.Instance.MoveScene("GameScene", 0.2f, 0.2f, SceneChangeType.BlackFade);
 			}
 		}
 
