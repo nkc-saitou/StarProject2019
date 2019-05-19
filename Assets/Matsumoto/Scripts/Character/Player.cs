@@ -126,6 +126,9 @@ namespace Matsumoto.Character {
 			//ポーズ追加
 			var pause = PauseSystem.Instance;
 			pause.AddPauseList(this);
+
+			// Dynamicbone
+			PlayerModel.GetComponent<SpriteSkin>().enabled = true;
 		}
 
 		private void Start() {
@@ -472,9 +475,7 @@ namespace Matsumoto.Character {
 		private IEnumerator AttackCollision() {
 			AttackCollider.enabled = true;
 			AttackEffect.Play();
-			Debug.Log("A");
 			yield return new WaitForSeconds(AttackHitTime);
-			Debug.Log("AE");
 			AttackCollider.enabled = false;
 			AttackEffect.Stop();
 		}

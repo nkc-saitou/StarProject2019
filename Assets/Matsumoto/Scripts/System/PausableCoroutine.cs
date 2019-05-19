@@ -19,13 +19,14 @@ public class PausableCoroutineSystem : SingletonMonoBehaviour<PausableCoroutineS
 
 	public Coroutine StartPausableCoroutine(MonoBehaviour target, IEnumerator routine) {
 		var r = target.StartCoroutine(routine);
-		_coroutines.Add(new CoroutineInfo(target, routine, r));
+		var info = new CoroutineInfo(target, routine, r);
+		_coroutines.Add(info);
+		// コルーチン終了検知を追加する
+		StartCoroutine(AddDeleter(info));
 		return r;
 	}
 
 	public void OnPauseBegin() {
-
-		Debug.Log(_coroutines.Count);
 
 		var temp = new List<CoroutineInfo>();
 		foreach(var item in _coroutines) {
@@ -52,8 +53,14 @@ public class PausableCoroutineSystem : SingletonMonoBehaviour<PausableCoroutineS
 
 	public void OnResumeEnd() {
 		foreach(var item in _coroutines) {
-			item.Target.StartCoroutine(item.Routine);
+			item.Coroutine = item.Target.StartCoroutine(item.Routine);
+			StartCoroutine(AddDeleter(item));
 		}
+	}
+
+	private IEnumerator AddDeleter(CoroutineInfo info) {
+		yield return info.Coroutine;
+		_coroutines.Remove(info);
 	}
 }
 
@@ -65,9 +72,18 @@ static class CoroutineExtension {
 }
 
 class CoroutineInfo {
-	public MonoBehaviour Target;
-	public IEnumerator Routine;
-	public Coroutine Coroutine;
+
+	public MonoBehaviour Target {
+		get; set;
+	}
+
+	public IEnumerator Routine {
+		get; set;
+	}
+
+	public Coroutine Coroutine {
+		get; set;
+	}
 
 	public CoroutineInfo(MonoBehaviour target, IEnumerator routine, Coroutine coroutine) {
 		Target = target;

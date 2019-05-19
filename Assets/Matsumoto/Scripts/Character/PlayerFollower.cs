@@ -61,6 +61,8 @@ namespace Matsumoto.Character {
 			FlySpeed += Random.Range(FlySpeed * RandomScale, -FlySpeed * RandomScale);
 			RandomInterval += Random.Range(RandomInterval * RandomScale, -RandomInterval * RandomScale);
 			ChangeIntervalTime += Random.Range(ChangeIntervalTime * RandomScale, -ChangeIntervalTime * RandomScale);
+
+			PauseSystem.Instance.AddPauseList(this);
 		}
 
 		// Update is called once per frame
