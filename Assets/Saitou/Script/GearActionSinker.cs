@@ -4,10 +4,8 @@ using UnityEngine;
 
 namespace StarProject2019.Saitou
 {
-
     public class GearActionSinker : GearActionBase
     {
-
         const float MAX_POS = 3.0f;
 
         float _posAmount;
@@ -27,7 +25,7 @@ namespace StarProject2019.Saitou
         public override void ActiveEffect()
         {
             transform.position = 
-                new Vector2(transform.position.x, (GetRotate / _posAmount));
+                new Vector2(transform.position.x, Mathf.Max((GetRotate / _posAmount),-3));
         }
     }
 }
