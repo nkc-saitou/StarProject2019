@@ -22,6 +22,10 @@ namespace StarProject2019.Saitou
 
         Player _player;
 
+        [SerializeField] ParticleSystem particle;
+
+        ParticleSystem.ShapeModule particleShape;
+
         //--------------------------------
         // 関数
         //--------------------------------
@@ -29,6 +33,12 @@ namespace StarProject2019.Saitou
         void Start()
         {
             _player = FindObjectOfType<Player>();
+
+            particleShape = particle.shape;
+
+            Vector3 size = new Vector3(transform.localScale.y * transform.localScale.y, transform.localScale.y);
+
+            particleShape.scale = size;
         }
 
         void Update()
