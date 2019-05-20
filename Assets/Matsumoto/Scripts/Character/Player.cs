@@ -126,9 +126,6 @@ namespace Matsumoto.Character {
 			//ポーズ追加
 			var pause = PauseSystem.Instance;
 			pause.AddPauseList(this);
-
-			// Dynamicbone
-			PlayerModel.GetComponent<SpriteSkin>().enabled = true;
 		}
 
 		private void Start() {
@@ -155,6 +152,8 @@ namespace Matsumoto.Character {
 			ChangeState(PlayerState.Star, true);
 			Morph(0);
 
+			// Dynamicbone
+			PlayerModel.GetComponent<SpriteSkin>().enabled = true;
 		}
 
 		// Update is called once per frame

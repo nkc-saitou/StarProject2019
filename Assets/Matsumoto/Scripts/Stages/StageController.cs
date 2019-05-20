@@ -1,8 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using System;
+using UnityEngine.SceneManagement;
+using Matsumoto.Gimmick;
 
 public enum GameState {
 	StartUp,
@@ -19,13 +22,45 @@ public class StageController : MonoBehaviour {
 
 	public bool IsCreateStage = true;
 
+	private string _followerDataKey;
+	private List<GimmickChip> _gimmicks = new List<GimmickChip>();
+
 	public GameState State {
 		get; private set;
 	} = GameState.StartUp;
 
+	private FollowerFindData _followerData = new FollowerFindData();
+	public FollowerFindData FollowerData {
+		get { return _followerData; }
+	}
+
 	private void Awake() {
+
+		var stagePath = "TestStage";
+		GameData.Instance.GetData(StageSelectController.LoadSceneKey, ref stagePath);
+
 		// ステージ生成
-		CreateStage();
+		CreateStage(stagePath);
+
+		// フォロワーのデータ取得
+		_followerDataKey = stagePath + "_FollowerData";
+		GameData.Instance.GetData(_followerDataKey, ref _followerData);
+
+		// ステージにないデータを削除
+		var followerChipIndex = FindObjectsOfType<FollowPlayerChip>()
+			.Select(item => item.FollowerIndex)
+			.ToArray();
+
+		_followerData.FindedIndexList = _followerData.FindedIndexList
+			.Where(data => Array.Exists(followerChipIndex, x => x == data))
+			.ToList();
+
+		// ギミック
+		_gimmicks = FindObjectsOfType<GimmickChip>().ToList();
+		foreach(var item in _gimmicks) {
+			item.Controller = this;
+			item.GimmickStart();
+		}
 	}
 
 	// Use this for initialization
@@ -48,12 +83,9 @@ public class StageController : MonoBehaviour {
 
 	}
 
-	private void CreateStage() {
+	private void CreateStage(string stagePath) {
 
 		if(!IsCreateStage) return;
-
-		var stagePath = "TestStage";
-		GameData.Instance.GetData(StageSelectController.LoadSceneKey, ref stagePath);
 		Instantiate(Resources.Load("Stages/" + stagePath));
 	}
 
@@ -71,6 +103,9 @@ public class StageController : MonoBehaviour {
 		Debug.Log("GameClear!");
 
 		State = GameState.GameClear;
+
+		GameData.Instance.SetData(_followerDataKey, _followerData);
+		GameData.Instance.Save();
 
 		OnGameClear?.Invoke(this);
 	}

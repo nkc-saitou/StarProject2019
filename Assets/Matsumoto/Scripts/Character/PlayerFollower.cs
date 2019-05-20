@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Experimental.U2D.Animation;
 
 namespace Matsumoto.Character {
 
@@ -23,7 +24,9 @@ namespace Matsumoto.Character {
 		public float RandomInterval = 3.0f;
 		public float ChangeIntervalTime = 2.0f;		// 切り替える最低の時間
 		public float MorphSpeed = 9;
-		public float RandomScale = 0.4f;			// ランダムで変化する量
+		public float RandomScale = 0.4f;            // ランダムで変化する量
+
+		public DynamicBone FollowerModel;
 
 		private Animator _animator;
 		private Rigidbody2D _rigidbody;
@@ -44,7 +47,7 @@ namespace Matsumoto.Character {
 		}
 
 		// Use this for initialization
-		void Start() {
+		void Awake() {
 
 			_animator = GetComponent<Animator>();
 			_rigidbody = GetComponent<Rigidbody2D>();
@@ -63,6 +66,11 @@ namespace Matsumoto.Character {
 			ChangeIntervalTime += Random.Range(ChangeIntervalTime * RandomScale, -ChangeIntervalTime * RandomScale);
 
 			PauseSystem.Instance.AddPauseList(this);
+		}
+
+		private void Start() {
+			// Dynamicbone
+			FollowerModel.GetComponent<SpriteSkin>().enabled = true;
 		}
 
 		// Update is called once per frame
@@ -91,12 +99,6 @@ namespace Matsumoto.Character {
 		private void FixedUpdate() {
 
 			_changeInterval = Mathf.Max(0, _changeInterval - Time.deltaTime);
-
-			if(!Target) {
-				Target = FindObjectOfType<Player>();
-			}
-
-			if(!Target) return;
 
 			// 移動
 			switch(State) {

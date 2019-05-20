@@ -6,17 +6,11 @@ namespace Matsumoto.Gimmick {
 
 	public class GimmickChip : MonoBehaviour {
 
-		protected StageController Controller {
-			get; private set;
+		public StageController Controller {
+			get; set;
 		}
 
-		private void Awake() {
-
-			Controller = FindObjectOfType<StageController>();
-
-		}
-
-		protected virtual void GimmickStart() { }
+		public virtual void GimmickStart() { }
 
 		[ContextMenu("SnapToGrid")]
 		public void SnapToGrid() {

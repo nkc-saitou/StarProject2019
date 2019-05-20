@@ -21,8 +21,7 @@ public class StageSelectController : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
-		// データ読み込み
-		GameData.Instance.Load();
+		// 進行度読み込み
 		GameData.Instance.GetData("StageProgress", ref _stageProgress);
 
 		// ステージノードのセットアップ
