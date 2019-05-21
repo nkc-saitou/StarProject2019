@@ -7,12 +7,24 @@ using UnityEngine;
 /// </summary>
 public class HidingEnemy : EnemyBase, IEnemy
 {
+    // 自身のSpriteRenderer
+    private SpriteRenderer myRenderer;
+
+    // 爆破用エフェクト
+    [SerializeField]
+    private GameObject bombEffect;
+
+    // 時間用
+    float time = 0.0f;
+    // 透過処理
+    float alpha = 0.0f;
 
     // Use this for initialization
     void Start()
     {
         target = GameObject.Find("Player");
         myRig = GetComponent<Rigidbody2D>();
+        myRenderer = GetComponent<SpriteRenderer>();
         canAction = true;
     }
 
@@ -42,8 +54,38 @@ public class HidingEnemy : EnemyBase, IEnemy
         playerDis = CheckDistance(target.transform.position);
 
         // アクション範囲にいるなら
-        if (playerDis <= actionRange) Action();
+        if (playerDis <= actionRange) StartCoroutine(IntervalAction(2.0f));
 
+    }
+
+    /// <summary>
+    /// 爆破までの点滅
+    /// </summary>
+    IEnumerator ExplosionLight()
+    {
+        time = 0.0f;
+
+        // RendererのColorを取得
+        var color = myRenderer.color;
+        // アルファフェードインアウト
+        while (time < 0.5f) {
+            time += Time.deltaTime;
+            color.a = Mathf.Lerp(myRenderer.color.a, 0.0f, time * 100.0f * Time.deltaTime);
+            myRenderer.color = color;
+            yield return null;
+        }
+
+        time = 0.0f;
+        color = myRenderer.color;
+
+        while (time < 0.5f) {
+            time += Time.deltaTime;
+            color.a = Mathf.Lerp(myRenderer.color.a, 1.0f, time * 100.0f * Time.deltaTime);
+            myRenderer.color = color;
+            yield return null;
+        }
+
+        StartCoroutine(ExplosionLight());
     }
 
     /// <summary>
@@ -51,15 +93,9 @@ public class HidingEnemy : EnemyBase, IEnemy
     /// </summary>
     public void Action()
     {
-        // プレイヤー方向
-        Vector2 playerDir = target.transform.position - transform.position;
+        Instantiate(bombEffect, transform.position, transform.rotation);
 
-        // 突進
-        myRig.AddForce(playerDir * 75.0f, ForceMode2D.Force);
-
-        canAction = false;
-
-        StartCoroutine(IntervalAction(2.0f));
+        Destroy(gameObject);
     }
 
     /// <summary>
@@ -69,9 +105,13 @@ public class HidingEnemy : EnemyBase, IEnemy
     /// <returns></returns>
     protected override IEnumerator IntervalAction(float _interval)
     {
+        canAction = false;
+
+        StartCoroutine(ExplosionLight());
+
         yield return new WaitForSeconds(_interval);
 
-        canAction = true;
+        Action();
     }
 
     /// <summary>
@@ -80,5 +120,19 @@ public class HidingEnemy : EnemyBase, IEnemy
     public void ApplyDamage()
     {
         Destroy(gameObject);
+    }
+
+    /// <summary>
+    /// 当たり判定
+    /// </summary>
+    /// <param name="col">当たったコリジョン</param>
+    void OnCollisionEnter2D(Collision2D col)
+    {
+        // プレイヤーの取得
+        var player = col.gameObject.GetComponent<Matsumoto.Character.Player>();
+        if (player == null) return;
+
+        // プレイヤーに当たったら即爆破
+        Action();
     }
 }

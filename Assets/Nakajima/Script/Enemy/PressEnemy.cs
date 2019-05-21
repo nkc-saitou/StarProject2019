@@ -2,37 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PatrolEnemy : EnemyBase, IEnemy
+public class PressEnemy : EnemyBase, IEnemy
 {
-    // 現在の位置
-    private Vector2 currentPos;
-    // 自分が目指す位置
-    private Vector2 targetPos;
-    // 自身の原点
+    // 自身の初期位置
     private Vector2 originPos;
-    // 探索位置
+    // 索敵範囲
     [SerializeField]
-    private Vector2 moveValue;
-    // 目標地点
-    private Vector2 goalPos;
-
-    // 攻撃用オブジェクト
-    [SerializeField]
-    private GameObject bombObj;
-
+    private float pressRange;
     // 移動に使う変数
-    [SerializeField]
-    private float speed;
     float time = 0.0f;
 
     // Use this for initialization
-    void Start()
-    {
+    void Start () {
         target = GameObject.Find("Player");
-        currentPos = transform.position;
+        myRig = GetComponent<Rigidbody2D>();
         originPos = transform.position;
-        goalPos = originPos + moveValue;
-        targetPos = goalPos;
         canAction = true;
     }
 	
@@ -41,27 +25,24 @@ public class PatrolEnemy : EnemyBase, IEnemy
         CheckAction();
 
         Move();
-    }
+	}
 
     /// <summary>
     /// 移動
     /// </summary>
     public void Move()
     {
+        if (canAction == false) return;
+
+        if (Mathf.Abs(transform.position.y - originPos.y) <= 0.5f) {
+            time = 0.0f;
+            return;
+        }
+
         time += Time.deltaTime;
 
         // 目標地点に移動
-        transform.position = Vector2.Lerp(transform.position, targetPos, time * speed);
-        // 現在位置の更新
-        currentPos = transform.position;
-
-        // 目標地点に近づいたら行き先変更
-        if(Mathf.Abs(currentPos.x - targetPos.x) + Mathf.Abs(currentPos.y - targetPos.y) <= 0.5f) {
-            if (targetPos == originPos) targetPos = goalPos;
-            else if (targetPos == goalPos) targetPos = originPos;
-
-            time = 0.0f;
-        }
+        transform.position = Vector2.Lerp(transform.position, originPos, time * Time.deltaTime);
     }
 
     /// <summary>
@@ -74,14 +55,12 @@ public class PatrolEnemy : EnemyBase, IEnemy
 
         // プレイヤーとの距離を検出
         playerDis = CheckDistanceX(target.transform.position);
-
-        // Y軸方向の距離取得
+        // 高低差
         float offsetY = CheckDistanceY(target.transform.position);
-        // ターゲットが上にいる場合はリターン
-        if (offsetY >= 0.0f) return;
 
         // アクション範囲にいるなら
-        if (playerDis <= actionRange) Action();
+        if (playerDis <= actionRange && offsetY <= pressRange) Action();
+
     }
 
     /// <summary>
@@ -89,10 +68,11 @@ public class PatrolEnemy : EnemyBase, IEnemy
     /// </summary>
     public void Action()
     {
-        Instantiate(bombObj, transform.position - new Vector3(0.0f, 1.1f), Quaternion.identity);
-
         canAction = false;
-        
+
+        // 重力適用
+        myRig.gravityScale = 1.0f;
+
         StartCoroutine(IntervalAction(2.0f));
     }
 
@@ -104,6 +84,9 @@ public class PatrolEnemy : EnemyBase, IEnemy
     protected override IEnumerator IntervalAction(float _interval)
     {
         yield return new WaitForSeconds(_interval);
+
+        // 重力無視
+        myRig.gravityScale = 0.0f;
 
         canAction = true;
     }
