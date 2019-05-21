@@ -59,7 +59,7 @@ public class PressEnemy : EnemyBase, IEnemy
         float offsetY = CheckDistanceY(target.transform.position);
 
         // アクション範囲にいるなら
-        if (playerDis <= actionRange && offsetY >= pressRange) Action();
+        if (playerDis <= actionRange && offsetY <= pressRange) Action();
 
     }
 
