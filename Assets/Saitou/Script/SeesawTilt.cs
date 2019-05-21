@@ -24,16 +24,9 @@ namespace StarProject2019.Saitou
         public delegate void TiltHandler(bool isLeft);
         public event TiltHandler tiltHandler;
 
-
-        void Start()
-        {
-
-        }
-
-        void Update()
-        {
-
-        }
+        //------------------------------------------
+        // 関数
+        //------------------------------------------
 
         void OnTriggerEnter2D(Collider2D _collision)
         {
