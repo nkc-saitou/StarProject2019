@@ -54,7 +54,7 @@ public class EnemyBase : MonoBehaviour
     protected float CheckDistanceY(Vector2 _targetPos)
     {
         // 目標座標との距離の検出
-        float _distance = _targetPos.y - transform.position.y;
+        float _distance = Mathf.Abs(_targetPos.y - transform.position.y);
 
         // 距離を返す
         return _distance;
