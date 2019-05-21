@@ -19,7 +19,13 @@ public class GameData : SingletonMonoBehaviour<GameData> {
 	public string SavePath {
 		get; set;
 	}
-	
+
+	protected override void Init() {
+		base.Init();
+
+		Load();
+	}
+
 	public void Save() {
 		_jsonText = JsonUtility.ToJson(_container);
 		Debug.Log(_jsonText);

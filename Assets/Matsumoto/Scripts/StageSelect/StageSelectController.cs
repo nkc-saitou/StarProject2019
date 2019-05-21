@@ -21,8 +21,7 @@ public class StageSelectController : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
-		// データ読み込み
-		GameData.Instance.Load();
+		// 進行度読み込み
 		GameData.Instance.GetData("StageProgress", ref _stageProgress);
 
 		// ステージノードのセットアップ
@@ -60,7 +59,7 @@ public class StageSelectController : MonoBehaviour {
 	private void MoveScene() {
 		Debug.Log("MoveScene");
 		GameData.Instance.SetData(LoadSceneKey, _currentSelectedStage.TargetStageName);
-		SceneMover.MoveScene("GameScene");
+		SceneChanger.Instance.MoveScene("GameScene", 1.0f, 1.0f, SceneChangeType.BlackFade);
 	}
 
 	private void MovePlayer(float position) {

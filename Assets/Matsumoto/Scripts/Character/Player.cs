@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using UnityEngine.Experimental.U2D.Animation;
 
 namespace Matsumoto.Character {
 
@@ -34,6 +35,7 @@ namespace Matsumoto.Character {
 		public float JumpWaitTime = 0.2f;
 
 		public Collider2D AttackCollider;
+		public DynamicBone PlayerModel;
 		public ParticleSystem MoveEffect;
 		public ParticleSystem JumpEffect;
 		public ParticleSystem AttackEffect;
@@ -120,6 +122,10 @@ namespace Matsumoto.Character {
 			};
 
 			IsFreeze = true;
+
+			//ポーズ追加
+			var pause = PauseSystem.Instance;
+			pause.AddPauseList(this);
 		}
 
 		private void Start() {
@@ -146,6 +152,8 @@ namespace Matsumoto.Character {
 			ChangeState(PlayerState.Star, true);
 			Morph(0);
 
+			// Dynamicbone
+			PlayerModel.GetComponent<SpriteSkin>().enabled = true;
 		}
 
 		// Update is called once per frame
@@ -452,7 +460,7 @@ namespace Matsumoto.Character {
 			_isDash = true;
 
 			// 攻撃判定
-			StartCoroutine(AttackCollision());
+			this.StartPausableCoroutine(AttackCollision());
 		}
 
 		private void ChangeState(PlayerState state, bool isForce = false) {
