@@ -58,6 +58,7 @@ namespace StarProject2019.Saitou
             if (hit.collider)
             {
                 Debug.Log(hit.collider.gameObject.name);
+                Debug.DrawLine(transform.position, hit.collider.transform.position, Color.green);
                 _target = hit.collider.gameObject;
 
                 ActiveEffect();
