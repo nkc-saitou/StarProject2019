@@ -1,0 +1,11 @@
+fileFormatVersion: 2
+guid: 7284a8bfb6f72404ba00080e0019d1c7
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures:
+  - _TileMapTextureRValue: {fileID: 2800000, guid: 0d6c0b1352989e949b1d00d0eb12766c,
+      type: 3}
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
