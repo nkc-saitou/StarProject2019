@@ -68,6 +68,8 @@ public class PressEnemy : EnemyBase, IEnemy
     /// </summary>
     public void Action()
     {
+        time = 0.0f;
+
         canAction = false;
 
         // 重力適用
@@ -111,5 +113,7 @@ public class PressEnemy : EnemyBase, IEnemy
 
         // プレイヤーにダメージを与える
         player.ApplyDamage(gameObject, DamageType.Enemy);
+
+        target = null;
     }
 }
