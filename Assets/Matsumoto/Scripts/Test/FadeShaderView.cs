@@ -12,7 +12,12 @@ public class FadeShaderView : MonoBehaviour {
 	public Material Target;
 
 	private void OnRenderImage(RenderTexture source, RenderTexture destination) {
-		Target.SetFloat("_Ratio", Ratio);
-		Graphics.Blit(source, destination, Target);
+		if(Target) {
+			Target.SetFloat("_Ratio", Ratio);
+			Graphics.Blit(source, destination, Target);
+		}
+		else {
+			Graphics.Blit(source, destination);
+		}
 	}
 }
