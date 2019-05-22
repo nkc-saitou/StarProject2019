@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 public enum SceneChangeType {
 	BlackFade,
 	WhiteFade,
+	StarBlackFade,
 }
 
 public class SceneChanger : SingletonMonoBehaviour<SceneChanger> {
@@ -36,6 +37,7 @@ public class SceneChanger : SingletonMonoBehaviour<SceneChanger> {
 		var basePath = "Materials/";
 		materials.Add(Resources.Load<Material>(basePath + "BlackFade"));
 		materials.Add(Resources.Load<Material>(basePath + "WhiteFade"));
+		materials.Add(Resources.Load<Material>(basePath + "StarBlackFade"));
 	}
 
 	private IEnumerator MoveSceneAnim(string sceneName, float fadeInTime, float fadeOutTime) {
