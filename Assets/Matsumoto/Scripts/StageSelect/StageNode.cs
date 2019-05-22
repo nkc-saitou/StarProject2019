@@ -18,8 +18,14 @@ public class StageNode : MonoBehaviour {
 		get; private set;
 	}
 
+	private float _length = 0;
 	public float Length {
-		get; private set;
+		get {
+			if(!NextStage) return 0;
+			_length = (NextStage.transform.position - transform.position).magnitude;
+			return _length;
+		}
+		private set { _length = value; }
 	}
 
 	// Use this for initialization
@@ -28,7 +34,6 @@ public class StageNode : MonoBehaviour {
 		PrevStage = prevStage;
 
 		if(NextStage) {
-			Length = (NextStage.transform.position - transform.position).magnitude;
 			NextStage.SetUpNode(this);
 		}
 	}
