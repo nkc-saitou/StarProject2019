@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
+public enum StageSelectState {
+	Title,
+	Select,
+}
+
 public class StageSelectController : MonoBehaviour {
 
 	public const string LoadSceneKey = "LoadScene";
@@ -20,6 +25,10 @@ public class StageSelectController : MonoBehaviour {
 	private List<IStageMoveEvent> _eventList;
 
 	public float Position;
+
+	public StageSelectState State {
+		get; set;
+	} = StageSelectState.Title;
 
 	public bool IsFreeze {
 		get; set;
@@ -64,7 +73,8 @@ public class StageSelectController : MonoBehaviour {
 			if(next) SetTarget(next);
 		}
 		if(Input.GetKeyDown(KeyCode.F)) {
-			if(_targetStage != FirstNode)
+			if(_targetStage != FirstNode && State != StageSelectState.Title)
+
 				MoveScene();
 		}
 
@@ -83,12 +93,20 @@ public class StageSelectController : MonoBehaviour {
 
 		if(p == Position) {
 			_currentSelectedStage = _targetStage;
+			_currentSelectedStage.IsSelected = true;
+		}
+		else {
+			if(_currentSelectedStage)
+				_currentSelectedStage.IsSelected = false;
+
+			_currentSelectedStage = null;
 		}
 
 		Position = p;
 	}
 
 	private void MoveScene() {
+		if(!_currentSelectedStage) return;
 		Debug.Log("MoveScene");
 		GameData.Instance.SetData(LoadSceneKey, _targetStage.TargetStageName);
 		SceneChanger.Instance.MoveScene("GameScene", 1.0f, 1.0f, SceneChangeType.StarBlackFade);
