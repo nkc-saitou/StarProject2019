@@ -12,7 +12,7 @@ public class CameraEvent : MonoBehaviour, IStageMoveEvent {
 	private Vector3 _startPosition;
 	private Camera _targetCamera;
 
-	private void Start() {
+	private void Awake() {
 		_targetCamera = Camera.main;
 		_startPosition = _targetCamera.transform.position;
 	}
@@ -21,9 +21,14 @@ public class CameraEvent : MonoBehaviour, IStageMoveEvent {
 		return EventPosition;
 	}
 
-	public void OnExecute(StageSelectController controller, bool forward) {
-		Debug.Log("Call");
-		StartCoroutine(CameraMoveAnim(controller, forward));
+	public void OnExecute(StageSelectController controller, bool forward, bool warp) {
+		if(!warp) {
+			StartCoroutine(CameraMoveAnim(controller, forward));
+		}
+		else {
+			_targetCamera.transform.position = 
+				forward ? MovePosition : _startPosition;
+		}
 	}
 
 	private IEnumerator CameraMoveAnim(StageSelectController controller, bool forward) {

@@ -6,6 +6,6 @@ interface IStageMoveEvent {
 
 	float GetPosition();
 
-	void OnExecute(StageSelectController controller, bool forward);
+	void OnExecute(StageSelectController controller, bool forward, bool warp);
 
 }

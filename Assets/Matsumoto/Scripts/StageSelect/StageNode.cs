@@ -27,6 +27,10 @@ public class StageNode : MonoBehaviour {
 		get; set;
 	}
 
+	public bool IsCleared {
+		get; set;
+	}
+
 	private float _length = 0;
 	public float Length {
 		get {
@@ -38,15 +42,23 @@ public class StageNode : MonoBehaviour {
 	}
 
 	// Use this for initialization
-	public void SetUpNode (StageNode prevStage) {
+	public void SetUpNode(StageNode prevStage, int clearedCount) {
 
 		if(transform.childCount > 0)
 			_lab = transform.GetChild(0);
 
+		IsCleared = clearedCount > 0;
+
 		PrevStage = prevStage;
 
+		// 簡単にクリア状態を表示
+		var spr = GetComponentInChildren<SpriteRenderer>();
+		if(spr) {
+			spr.color = IsCleared ? Color.white : Color.gray;
+		}
+
 		if(NextStage) {
-			NextStage.SetUpNode(this);
+			NextStage.SetUpNode(this, --clearedCount);
 		}
 	}
 	

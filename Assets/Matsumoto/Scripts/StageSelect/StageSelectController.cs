@@ -12,6 +12,8 @@ public class StageSelectController : MonoBehaviour {
 
 	public const string LoadSceneKey = "LoadScene";
 
+	private static bool _isFirstLoaded = true;
+
 	public StageNode FirstNode;
 	public Transform PlayerModel;
 
@@ -21,6 +23,7 @@ public class StageSelectController : MonoBehaviour {
 	private StageNode _currentSelectedStage;
 	private StageNode _targetStage;
 	private float _playerPositionTarget;
+	private Transform _playerBody;
 	private float _moveSpeedMag = 1;
 	private List<IStageMoveEvent> _eventList;
 
@@ -37,25 +40,42 @@ public class StageSelectController : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
+		_playerBody = PlayerModel.Find("Body").Find("StarWithBone");
+
 		// イベント読み込み
 		_eventList = GetComponentsInChildren<MonoBehaviour>()
 			.Select(x => x as IStageMoveEvent)
 			.Where(x => x != null)
+			.OrderBy(x => x.GetPosition())
 			.ToList();
 
 		// 進行度読み込み
 		GameData.Instance.GetData("StageProgress", ref _stageProgress);
+		_stageProgress = 2;
+		// ステージノードのセットアップ(+1はタイトル分)
+		FirstNode.SetUpNode(null, _stageProgress + 1);
 
-		// ステージノードのセットアップ
-		FirstNode.SetUpNode(null);
+		if(_isFirstLoaded) {
+			_isFirstLoaded = false;
+			_currentSelectedStage = _targetStage = FirstNode;
+		}
+		else {
+			// 進めたステージまで移動
+			_currentSelectedStage = _targetStage = GetStageNode(_stageProgress);
+		}
 
-		// 進めたステージまで移動
-		_currentSelectedStage = _targetStage = GetStageNode(_stageProgress);
 		_playerPositionTarget = GetLength(_targetStage);
+
+		// イベントを実行
+		foreach(var item in _eventList) {
+			if(_playerPositionTarget > item.GetPosition()) {
+				Debug.Log(_playerPositionTarget + " " + item.GetPosition());
+				item.OnExecute(this, true, true);
+			}
+		}
 
 		// プレイヤーを移動
 		MovePlayer(_playerPositionTarget);
-
 		Position = _playerPositionTarget;
 	}
 	
@@ -65,12 +85,12 @@ public class StageSelectController : MonoBehaviour {
 		if(IsFreeze) return;
 
 		if(Input.GetKeyDown(KeyCode.A)) {
-			var prev = _currentSelectedStage.PrevStage;
+			var prev = _targetStage.PrevStage;
 			if(prev) SetTarget(prev);
 		}
 		if(Input.GetKeyDown(KeyCode.D)) {
-			var next = _currentSelectedStage.NextStage;
-			if(next) SetTarget(next);
+			var next = _targetStage.NextStage;
+			if(next && _targetStage.IsCleared) SetTarget(next);
 		}
 		if(Input.GetKeyDown(KeyCode.F)) {
 			if(_targetStage != FirstNode && State != StageSelectState.Title)
@@ -87,7 +107,7 @@ public class StageSelectController : MonoBehaviour {
 		foreach(var e in _eventList) {
 			var c = e.GetPosition();
 			if(low <= c && c <= high) {
-				e.OnExecute(this, forward);
+				e.OnExecute(this, forward, false);
 			}
 		}
 
@@ -142,7 +162,7 @@ public class StageSelectController : MonoBehaviour {
 		}
 
 		PlayerModel.transform.position = nextPos;
-		PlayerModel.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+		_playerBody.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
 	}
 
 	private StageNode GetStageNode(int number) {
