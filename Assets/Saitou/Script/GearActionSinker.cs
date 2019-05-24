@@ -6,15 +6,22 @@ namespace StarProject2019.Saitou
 {
     public class GearActionSinker : GearActionBase
     {
-        const float MAX_POS = 3.0f;
+        public float PosAmount { get; private set; }
 
-        float _posAmount;
+        [Header("横方向")]
+        public bool isSide;
+
+        Vector2 moveVec;
+
+        Vector2 startVec;
 
         protected override void DoStart()
         {
-            _posAmount = MAX_POS * 2;
+            startVec = transform.position;
 
-            gear.Permission = GearPermission.Right;
+            PosAmount = _maxRotate;
+
+            gear.Permission = GearPermission.All;
         }
 
         protected override void DoUpdate()
@@ -24,8 +31,10 @@ namespace StarProject2019.Saitou
 
         public override void ActiveEffect()
         {
-            transform.position = 
-                new Vector2(transform.position.x, Mathf.Max((GetRotate / _posAmount),-3));
+            if (isSide) moveVec = new Vector2(GetRotate, 0);
+            else　moveVec = new Vector2(0, GetRotate);
+
+            transform.position = startVec + moveVec;
         }
     }
 }

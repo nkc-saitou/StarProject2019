@@ -44,7 +44,12 @@ namespace StarProject2019.Saitou
         Animator _animator;
         Player _player;
 
+        // 判定範囲から外れていたらtrue
         bool isExit = true;
+
+        bool isFirstStop = true;
+
+        float dis = 0;
 
         //------------------------------------------
         // プロパティ
@@ -55,17 +60,25 @@ namespace StarProject2019.Saitou
         /// </summary>
         public float RollSpeed { get; private set; }
 
-        public float RotationAmount { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public float RotationAmount { get; set; }
 
         /// <summary>
         /// Max回転量を与える
         /// </summary>
-        public float MaxRotateAmount { get; private set; } = 20;
+        public float MaxRotateAmount { get; set; }
 
         /// <summary>
         /// 戻したい回転位置をセット
         /// </summary>
-        public float ReturnRotateAmount { get; set; } = 0;
+        public float ReturnRotateAmount { get; set; }
+
+        /// <summary>
+        /// 回転量のたまるスピードを調整
+        /// </summary>
+        public float RotateAmountSpeed { get; set; }
 
         /// <summary>
         /// ギアの状態
@@ -94,23 +107,12 @@ namespace StarProject2019.Saitou
 
         void Update()
         {
+            CheckDistance();
+
             GearRotate();
             GearReturn();
-        }
 
-        public void SetStartAmount(float amount)
-        {
-            RotationAmount = amount;
-        }
-
-        public void SetMaxAmount(float amount)
-        {
-            MaxRotateAmount = amount;
-        }
-
-        public void SetReturnAmount(float amount)
-        {
-            ReturnRotateAmount = amount;
+            PlayerRotateControl();
         }
 
         /// <summary>
@@ -118,9 +120,12 @@ namespace StarProject2019.Saitou
         /// </summary>
         void GearRotate()
         {
+            if (isExit != false) return;
+
             // 現在の回転量がMaxで指定してあった回転量を上回る場合は処理をしない
-            if ((IsRotate() == false || _player.State != PlayerState.Star) && isExit == false)
+            if ((IsRotate() == false || _player.State != PlayerState.Star))
             {
+
                 _player.IsRotate = true;
                 // アニメーション
                 _animator.SetFloat("Speed", 0);
@@ -138,7 +143,7 @@ namespace StarProject2019.Saitou
             // 回転量
             if (State == GearState.Roll)
             {
-                RotationAmount += RollSpeed * Time.deltaTime * (int)RotateDir;
+                RotationAmount += RollSpeed * Time.deltaTime * (int)RotateDir * RotateAmountSpeed;
             }
 
         }
@@ -154,7 +159,7 @@ namespace StarProject2019.Saitou
             if (RotationAmount > ReturnRotateAmount &&
                 (Permission == GearPermission.Right || Permission == GearPermission.All))
             {
-                RotationAmount -= Time.deltaTime;
+                RotationAmount -= Time.deltaTime * 0.5f;
                 _animator.SetFloat("Speed", -0.1f);
 
                 // 値がマイナスになったら値を０に
@@ -165,7 +170,7 @@ namespace StarProject2019.Saitou
             else if(RotationAmount < ReturnRotateAmount &&
                 (Permission == GearPermission.Left || Permission == GearPermission.All))
             {
-                RotationAmount += Time.deltaTime;
+                RotationAmount += Time.deltaTime * 0.5f;
                 _animator.SetFloat("Speed", 0.1f);
 
                 // 値がプラスになったら値を０
@@ -185,26 +190,37 @@ namespace StarProject2019.Saitou
             else return true;
         }
 
-        private void OnCollisionStay2D(Collision2D _collision)
+        void CheckDistance()
         {
-            // 当たっているのがプレイヤー以外であれば処理しない
-            if (_collision.gameObject != _player.gameObject) return;
-
-            isExit = false;
-
-            // 移動方向(プレイヤーの回転と反対方向に回転)
-            if (_player.RollSpeed != 0)
-                RotateDir = (_player.RollSpeed > 0 ? GearRotateDir.Left : GearRotateDir.Right);
-
-            if (_player.RollSpeed != 0) State = GearState.Roll;
-            else State = GearState.Free;
+            dis = Vector2.Distance(_player.transform.position, transform.position);
         }
 
-        private void OnCollisionExit2D(Collision2D collision)
+        void PlayerRotateControl()
         {
-            State = GearState.Free;
-            _player.IsRotate = false;
-            isExit = true;
+            // 歯車と近づいていたら
+            if (dis <= 0.9f && isFirstStop == false)
+            {
+                // 近づいているのでfalse
+                isExit = false;
+                // 一度しか判定しないように調整するためのflg
+                isFirstStop = true;
+
+                if (_player.RollSpeed != 0)
+                    RotateDir = (_player.RollSpeed > 0 ? GearRotateDir.Left : GearRotateDir.Right);
+
+                if (_player.RollSpeed != 0) State = GearState.Roll;
+                else State = GearState.Free;
+            }
+            // 一定以上離れたら関与しない
+            else if(dis > 0.9f && dis < 1.2f && isFirstStop == true)
+            {
+                // 離れたのでtrue
+                isExit = true;
+                isFirstStop = false;
+
+                State = GearState.Free;
+                _player.IsRotate = false;
+            }
         }
     }
 }

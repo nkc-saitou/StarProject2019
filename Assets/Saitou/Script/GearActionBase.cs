@@ -12,13 +12,17 @@ namespace StarProject2019.Saitou
         [SerializeField]
         protected GimmickGear gear;
 
-        [SerializeField]
-        protected float _maxRotate = 20.0f;
+        [SerializeField, Header("回転を戻す方向")]
+        protected GearPermission permission;
 
-        [SerializeField]
+        [Header("最大回転")]
+        public float _maxRotate;
+
+        [SerializeField,Header("回転量がたまるスピードを調整"),Range(0.1f,1.0f)]
+        protected float _amountRotateSpeed = 0.0f;
+
         protected float _startRotate = 0.0f;
 
-        [SerializeField]
         protected float _returnRotate = 0.0f;
 
         protected float GetRotate { get; private set; }
@@ -28,7 +32,6 @@ namespace StarProject2019.Saitou
         //------------------------------------------
 
         public abstract void ActiveEffect();
-
         protected abstract void DoStart();
         protected abstract void DoUpdate();
 
@@ -38,11 +41,14 @@ namespace StarProject2019.Saitou
 
         void Start()
         {
-            gear.SetMaxAmount(_maxRotate);
-            gear.SetStartAmount(_startRotate);
-            gear.SetReturnAmount(_returnRotate);
-
             DoStart();
+
+            SetAllRotateValue();
+
+            gear.MaxRotateAmount = _maxRotate;
+            gear.RotationAmount = _startRotate;
+            gear.ReturnRotateAmount = _returnRotate;
+            gear.RotateAmountSpeed = _amountRotateSpeed;
         }
 
         void Update()
@@ -50,6 +56,27 @@ namespace StarProject2019.Saitou
             GetRotate = gear.RotationAmount;
 
             DoUpdate();
+        }
+
+        void SetAllRotateValue()
+        {
+            switch(permission)
+            {
+                case GearPermission.Right:
+                    _startRotate = _maxRotate;
+                    _returnRotate = _maxRotate;
+                    break;
+
+                case GearPermission.Left:
+                    _startRotate = -_maxRotate;
+                    _returnRotate = -_maxRotate;
+                    break;
+
+                case GearPermission.All:
+                    _startRotate = 0;
+                    _returnRotate = 0;
+                    break;
+            }
         }
     }
 }
