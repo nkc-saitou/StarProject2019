@@ -26,6 +26,13 @@ public class Bomb : MonoBehaviour
     {
         Instantiate(bombEffect, transform.position, transform.rotation);
 
+        // Playerの取得
+        var player = col.gameObject.GetComponent<Matsumoto.Character.Player>();
+        if (player != null) {
+            // プレイヤーにダメージを与える
+            player.ApplyDamage(gameObject, DamageType.Gimmick);
+        }
+
         Destroy(gameObject);
     }
 }

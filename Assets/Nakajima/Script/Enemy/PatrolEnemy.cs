@@ -89,7 +89,7 @@ public class PatrolEnemy : EnemyBase, IEnemy
     /// </summary>
     public void Action()
     {
-        Instantiate(bombObj, transform.position - new Vector3(0.0f, 1.1f), Quaternion.identity);
+        Instantiate(bombObj, transform.position - new Vector3(0.0f, 1.5f), Quaternion.identity);
 
         canAction = false;
         
