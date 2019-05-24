@@ -34,7 +34,10 @@ public class PauseSystem : SingletonMonoBehaviour<PauseSystem> {
 
 		SceneManager.sceneUnloaded += (s) => {
 			_pauseMonoBehaviours.Clear();
+			_pauseReceivables.Clear();
 			_pauseRigidbody2DInfos.Clear();
+			_pauseAnimators.Clear();
+			_pauseParticles.Clear();
 		};
 	}
 

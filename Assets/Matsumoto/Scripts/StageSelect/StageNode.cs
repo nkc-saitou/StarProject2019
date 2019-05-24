@@ -8,6 +8,11 @@ public class StageNode : MonoBehaviour {
 
 	public string TargetStageName;
 
+	private float _freq = 1.0f;
+	private float _amp = 1.0f;
+	private Transform _lab;
+	private bool _isPlayAnim;
+
 	[SerializeField]
 	private StageNode _nextStage;
 	public StageNode NextStage {
@@ -16,6 +21,14 @@ public class StageNode : MonoBehaviour {
 
 	public StageNode PrevStage {
 		get; private set;
+	}
+
+	public bool IsSelected {
+		get; set;
+	}
+
+	public bool IsCleared {
+		get; set;
 	}
 
 	private float _length = 0;
@@ -29,20 +42,54 @@ public class StageNode : MonoBehaviour {
 	}
 
 	// Use this for initialization
-	public void SetUpNode (StageNode prevStage) {
+	public void SetUpNode(StageNode prevStage, int clearedCount) {
+
+		if(transform.childCount > 0)
+			_lab = transform.GetChild(0);
+
+		IsCleared = clearedCount > 0;
 
 		PrevStage = prevStage;
 
+		// 簡単にクリア状態を表示
+		var spr = GetComponentInChildren<SpriteRenderer>();
+		if(spr) {
+			spr.color = IsCleared ? Color.white : Color.gray;
+		}
+
 		if(NextStage) {
-			NextStage.SetUpNode(this);
+			NextStage.SetUpNode(this, --clearedCount);
 		}
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		
+
+		if(IsSelected && _lab && !_isPlayAnim) {
+			StartCoroutine(SelectedAnim());
+		}
+
 	}
 
+	private IEnumerator SelectedAnim() {
+		_isPlayAnim = true;
+
+		var t = 0.0f;
+
+		while(t < 0.5f) {
+
+			t = Mathf.Min(t + Time.deltaTime * _freq, 0.5f);
+			_lab.transform.localScale = Vector3.one * (1 + Mathf.Sin(t * 2 * Mathf.PI) * _amp);
+			yield return null;
+		}
+
+		if(IsSelected && _lab && !_isPlayAnim) {
+			StartCoroutine(SelectedAnim());
+		}
+		else {
+			_isPlayAnim = false;
+		}
+	}
 
 	public void OnDrawGizmos() {
 		if(!NextStage) return;
