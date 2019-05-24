@@ -10,22 +10,25 @@ namespace DDD.Matsumoto.Audio {
 	/// </summary>
 	public sealed class AudioManager : SingletonMonoBehaviour<AudioManager> {
 
-		const string MixerPath = "Sounds/MainAudioMixer";		//ミキサーのパス
-		const string BGMPath = "Sounds/BGM/";					//BGMのフォルダーパス
-		const string SEPath = "Sounds/SE/";						//SEのフォルダーパス
+		public const float MaxVolume = 0.0f;						//ミキサーの最大音量
+		public const float MinVolume = -80.0f;						//ミキサーの最小音量
+
+		private const string MixerPath = "Sounds/MainAudioMixer";	//ミキサーのパス
+		private const string BGMPath = "Sounds/BGM/";               //BGMのフォルダーパス
+		private const string SEPath = "Sounds/SE/";                 //SEのフォルダーパス
 
 		private readonly AudioMixerGroup[] _mixerGroups = new AudioMixerGroup[2];//ミキサーのグループ [0]SE [1]BGM
 
-		Dictionary<string, AudioClipInfo> _SEclips;				//SE再生用リスト
-		Dictionary<string, AudioClip> _BGMclips;				//BGM再生用リスト
+		private Dictionary<string, AudioClipInfo> _SEclips;			//SE再生用リスト
+		private Dictionary<string, AudioClip> _BGMclips;			//BGM再生用リスト
 
-		AudioSource _currentPlayingBGM;							//現在再生されているBGM
-		string _currentPlayedBGMName = "";						//再生されているBGMの名前
+		private AudioSource _currentPlayingBGM;						//現在再生されているBGM
+		private string _currentPlayedBGMName = "";					//再生されているBGMの名前
 
-		Coroutine _fadeInCol;									//BGMフェードインのコルーチン
-		AudioSource _fadeInAudio;								//BGMフェードイン用のAudioSource
+		private Coroutine _fadeInCol;								//BGMフェードインのコルーチン
+		private AudioSource _fadeInAudio;							//BGMフェードイン用のAudioSource
 
-		public AudioMixer Mixer { get; private set; }			//ミキサー
+		public AudioMixer Mixer { get; private set; }				//ミキサー
 
 		/// <summary>
 		/// 各音情報を読み込み
@@ -140,6 +143,60 @@ namespace DDD.Matsumoto.Audio {
 			Instance._currentPlayedBGMName = BGMName;
 
 			return src;
+		}
+
+		/// <summary>
+		/// マスターのボリュームを返す
+		/// </summary>
+		/// <param name="ratio"></param>
+		public static float GetMasterVolume() {
+			float v;
+			Instance.Mixer.GetFloat("MasterVolumne", out v);
+			return (v - MinVolume) / (MaxVolume - MinVolume);
+		}
+
+		/// <summary>
+		/// マスターのボリュームを設定
+		/// </summary>
+		/// <param name="ratio"></param>
+		public static void SetMasterVolume(float ratio) {
+			Instance.Mixer.SetFloat("MasterVolumne", Mathf.Lerp(MinVolume, MaxVolume, ratio));
+		}
+
+		/// <summary>
+		/// SEのボリュームを返す
+		/// </summary>
+		/// <param name="ratio"></param>
+		public static float GetSEVolume() {
+			float v;
+			Instance.Mixer.GetFloat("SEVolumne", out v);
+			return (v - MinVolume) / (MaxVolume - MinVolume);
+		}
+
+		/// <summary>
+		/// SEのボリュームを設定
+		/// </summary>
+		/// <param name="ratio"></param>
+		public static void SetSEVolume(float ratio) {
+			Instance.Mixer.SetFloat("SEVolumne", Mathf.Lerp(MinVolume, MaxVolume, ratio));
+		}
+
+		/// <summary>
+		/// BGMのボリュームを返す
+		/// </summary>
+		/// <param name="ratio"></param>
+		public static float GetBGMVolume() {
+			float v;
+			Instance.Mixer.GetFloat("BGMVolumne", out v);
+			return (v - MinVolume) / (MaxVolume - MinVolume);
+		}
+
+		/// <summary>
+		/// BGMのボリュームを設定
+		/// </summary>
+		/// <param name="ratio"></param>
+		public static void SetBGMVolume(float ratio) {
+			Instance.Mixer.SetFloat("BGMVolumne", Mathf.Lerp(MinVolume, MaxVolume, ratio));
 		}
 
 		/// <summary>
