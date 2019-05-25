@@ -68,10 +68,12 @@ public class PressEnemy : EnemyBase, IEnemy
     /// </summary>
     public void Action()
     {
+        time = 0.0f;
+
         canAction = false;
 
         // 重力適用
-        myRig.gravityScale = 1.0f;
+        myRig.gravityScale = 2.0f;
 
         StartCoroutine(IntervalAction(2.0f));
     }
@@ -97,5 +99,21 @@ public class PressEnemy : EnemyBase, IEnemy
     public void ApplyDamage()
     {
         Destroy(gameObject);
+    }
+
+    /// <summary>
+    /// 当たり判定
+    /// </summary>
+    /// <param name="col">当たったコリジョン</param>
+    void OnCollisionEnter2D(Collision2D col)
+    {
+        // Playerの取得
+        var player = col.gameObject.GetComponent<Matsumoto.Character.Player>();
+        if (player == null) return;
+
+        // プレイヤーにダメージを与える
+        player.ApplyDamage(gameObject, DamageType.Enemy);
+
+        target = null;
     }
 }

@@ -91,6 +91,10 @@ namespace Matsumoto.Character {
 			get; set;
 		}
 
+		public bool IsAttacking {
+			get; private set;
+		}
+
 		public event Action<PlayerState, PlayerState> OnChangeState;
 
 		private void Awake() {
@@ -472,10 +476,10 @@ namespace Matsumoto.Character {
 		}
 
 		private IEnumerator AttackCollision() {
-			AttackCollider.enabled = true;
+			AttackCollider.enabled = IsAttacking = true;
 			AttackEffect.Play();
 			yield return new WaitForSeconds(AttackHitTime);
-			AttackCollider.enabled = false;
+			AttackCollider.enabled = IsAttacking = false;
 			AttackEffect.Stop();
 		}
 
@@ -557,6 +561,8 @@ namespace Matsumoto.Character {
 		}
 
 		public void ApplyDamage(GameObject damager, DamageType type, float power = 1.0f) {
+
+			if(type == DamageType.Enemy && IsAttacking) return;
 
 			_stageController.GameOver();
 
