@@ -37,15 +37,17 @@ namespace Matsumoto.Character {
 		public Collider2D AttackCollider;
 		public DynamicBone PlayerModel;
 		public ParticleSystem MoveEffect;
-		public ParticleSystem JumpEffect;
+		public GameObject JumpEffectPrefab;
 		public ParticleSystem AttackEffect;
-		public ParticleSystem HitEffect;
+		public GameObject HitEffectPrefab;
+		public GameObject DeathEffectPrefab;
 
 		private StageController _stageController;
 		private Animator _animator;
 		private Transform _eye;
 		private SpriteRenderer _body;
 		private SpriteRenderer _bodyWithBone;
+		private Renderer[] _playerRenderers;
 
 		private bool _isDash = false;
 		private bool _canDash = true;
@@ -87,6 +89,19 @@ namespace Matsumoto.Character {
 			}
 		}
 
+		private bool _isRenderer = true;
+		public bool IsRenderer {
+			get { return _isRenderer; }
+			set {
+				if(_isRenderer == value) return;
+				_isRenderer = value;
+
+				foreach(var item in _playerRenderers) {
+					item.enabled = value;
+				}
+			}
+		}
+
 		public bool IsRotate {
 			get; set;
 		}
@@ -107,6 +122,7 @@ namespace Matsumoto.Character {
 			_eye = transform.Find("Eye");
 			_body = transform.Find("Body").GetComponent<SpriteRenderer>();
 			_bodyWithBone = _body.transform.Find("StarWithBone").GetComponent<SpriteRenderer>();
+			_playerRenderers = GetComponentsInChildren<Renderer>();
 
 			_currentStatus = ScriptableObject.CreateInstance<PlayerStatus>();
 			_currentStatus.Material = new PhysicsMaterial2D("CurrentMat");
@@ -185,7 +201,7 @@ namespace Matsumoto.Character {
 					PlayerRig.AddForce(ToVector(_gravityDirection) * -MaxChargePower);
 
 					Debug.Log(_gravityDirection);
-					var g = Instantiate(JumpEffect, transform);
+					var g = Instantiate(JumpEffectPrefab, transform);
 					g.transform.SetParent(null);
 					Destroy(g.gameObject, 5);
 				}
@@ -198,6 +214,10 @@ namespace Matsumoto.Character {
 				if(morph == 0) ChangeState(PlayerState.Star);
 				else if(morph == 1) ChangeState(PlayerState.Circle);
 				else ChangeState(PlayerState.Morphing);
+			}
+
+			if(Input.GetKeyDown(KeyCode.P)) {
+				ApplyDamage(gameObject, DamageType.Enemy);
 			}
 
 			// エフェクト操作
@@ -414,6 +434,7 @@ namespace Matsumoto.Character {
 			_animator.SetFloat("Morph", ratio);
 
 			// 描画対象選択
+			if(!IsRenderer) return;
 			var pstar = ratio != 0;
 			_body.enabled = pstar;
 			_bodyWithBone.enabled = !pstar;
@@ -541,7 +562,7 @@ namespace Matsumoto.Character {
 			var enemy = collision.gameObject.GetComponent<IEnemy>();
 			if(enemy == null) return;
 
-			var g = Instantiate(HitEffect, transform.position, transform.rotation);
+			var g = Instantiate(HitEffectPrefab, transform.position, transform.rotation);
 			Destroy(g.gameObject, 5);
 
 			enemy.ApplyDamage();
@@ -563,6 +584,11 @@ namespace Matsumoto.Character {
 		public void ApplyDamage(GameObject damager, DamageType type, float power = 1.0f) {
 
 			if(type == DamageType.Enemy && IsAttacking) return;
+
+			// 死亡演出
+			IsRenderer = false;
+			var p = Instantiate(DeathEffectPrefab, transform.position, transform.rotation);
+			Destroy(p, 5.0f);
 
 			_stageController.GameOver();
 

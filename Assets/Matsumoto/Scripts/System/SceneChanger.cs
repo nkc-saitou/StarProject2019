@@ -23,6 +23,7 @@ public class SceneChanger : SingletonMonoBehaviour<SceneChanger> {
 
 		_camera = gameObject.AddComponent<Camera>();
 		_camera.clearFlags = CameraClearFlags.Nothing;
+		_camera.cullingMask = 0;
 		LoadShader();
 	}
 
