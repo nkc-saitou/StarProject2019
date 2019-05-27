@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DDD.Matsumoto.Audio {
+namespace Matsumoto.Audio {
 
 	/// <summary>
 	/// 再生されるSEの音量の制御を行う

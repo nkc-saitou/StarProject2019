@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using Matsumoto.Audio;
 
 public enum StageSelectState {
 	Title,
@@ -79,6 +80,9 @@ public class StageSelectController : MonoBehaviour {
 		// プレイヤーを移動
 		MovePlayer(_playerPositionTarget);
 		Position = _playerPositionTarget;
+
+		// BGMを鳴らす
+		AudioManager.FadeIn(1.0f, "distantfuture");
 	}
 	
 	// Update is called once per frame
@@ -130,6 +134,10 @@ public class StageSelectController : MonoBehaviour {
 	private void MoveScene() {
 		if(!_currentSelectedStage) return;
 		Debug.Log("MoveScene");
+
+		// ステージ用BGM
+		AudioManager.FadeOut(1.0f);
+
 		GameData.Instance.SetData(LoadSceneKey, _targetStage.TargetStageName);
 		SceneChanger.Instance.MoveScene("GameScene", 1.0f, 1.0f, SceneChangeType.StarBlackFade);
 	}

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
 
-namespace DDD.Matsumoto.Audio {
+namespace Matsumoto.Audio {
 
 	/// <summary>
 	/// SEに取り付けられている制御用クラス

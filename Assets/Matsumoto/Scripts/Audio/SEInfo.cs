@@ -1,5 +1,5 @@
 ﻿
-namespace DDD.Matsumoto.Audio {
+namespace Matsumoto.Audio {
 
 	/// <summary>
 	/// 再生されているSEの情報
