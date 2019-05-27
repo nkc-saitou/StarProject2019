@@ -16,9 +16,13 @@ public class PatrolEnemy : EnemyBase, IEnemy
     // 目標地点
     private Vector2 goalPos;
 
-    // 攻撃用オブジェクト
+    // 自身のLineRenderer
+    private LineRenderer lineRen;
+
+    // LineRendererの描画地点
     [SerializeField]
-    private GameObject bombObj;
+    private GameObject startObj;
+    private Vector3 endPos;
 
     // 移動に使う変数
     [SerializeField]
@@ -28,6 +32,7 @@ public class PatrolEnemy : EnemyBase, IEnemy
     // Use this for initialization
     void Start()
     {
+        lineRen = GetComponent<LineRenderer>();
         target = GameObject.Find("Player");
         currentPos = transform.position;
         originPos = transform.position;
@@ -89,11 +94,24 @@ public class PatrolEnemy : EnemyBase, IEnemy
     /// </summary>
     public void Action()
     {
-        Instantiate(bombObj, transform.position - new Vector3(0.0f, 1.5f), Quaternion.identity);
+        int playerLayer = LayerMask.GetMask("Player", "PlayerFollower");
+        int groundLayer = LayerMask.GetMask("Player", "PlayerFollower", "Ignore Raycast");
 
-        canAction = false;
-        
-        StartCoroutine(IntervalAction(2.0f));
+        RaycastHit2D groundHit = Physics2D.Raycast(transform.position, -transform.up, 500.0f, ~groundLayer);
+
+        endPos = groundHit.point;
+
+        lineRen.SetPosition(0, startObj.transform.position);
+        lineRen.SetPosition(1, endPos);
+
+        lineRen.startWidth = 0.2f;
+        lineRen.endWidth = 0.2f;
+
+        RaycastHit2D playerHit = Physics2D.Raycast(transform.position, -transform.up, 500.0f, playerLayer);
+        if(playerHit.collider != null) {
+            var player = playerHit.collider.gameObject.GetComponent<Matsumoto.Character.Player>();
+            if (player != null) player.ApplyDamage(gameObject, DamageType.Enemy);
+        }
     }
 
     /// <summary>
