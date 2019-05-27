@@ -24,6 +24,12 @@ public class PatrolEnemy : EnemyBase, IEnemy
     private GameObject startObj;
     private Vector3 endPos;
 
+    // レーザー用のパーティクル
+    [SerializeField]
+    private ParticleSystem razerCore;
+    [SerializeField]
+    private ParticleSystem razerHit;
+
     // 移動に使う変数
     [SerializeField]
     private float speed;
@@ -102,7 +108,7 @@ public class PatrolEnemy : EnemyBase, IEnemy
 
         // LineRendererをアクティブにする
         if (lineRen.enabled == false) {
-            lineRen.enabled = true;
+            SetLineRenderer(lineRen.enabled);
             StartCoroutine(IntervalAction(2.0f));
         }
 
@@ -110,13 +116,14 @@ public class PatrolEnemy : EnemyBase, IEnemy
         RaycastHit2D groundHit = Physics2D.Raycast(transform.position, -transform.up, 500.0f, ~groundLayer);
         // 地面の地点取得
         endPos = groundHit.point;
+        razerHit.transform.position = endPos;
 
         // Lineの位置を定義
         lineRen.SetPosition(0, startObj.transform.position);
         lineRen.SetPosition(1, endPos);
         // Lineの長さを定義
-        lineRen.startWidth = 0.2f;
-        lineRen.endWidth = 0.2f;
+        lineRen.startWidth = 0.1f;
+        lineRen.endWidth = 0.1f;
 
         // プレイヤー判定
         RaycastHit2D playerHit = Physics2D.Raycast(transform.position, -transform.up, 500.0f, playerLayer);
@@ -141,7 +148,28 @@ public class PatrolEnemy : EnemyBase, IEnemy
         }
         else canAction = true;
 
-        if (lineRen.enabled == true) lineRen.enabled = false;
+        if (lineRen.enabled == true) SetLineRenderer(lineRen.enabled);
+    }
+
+    /// <summary>
+    /// LineRendererのアクティブ設定
+    /// </summary>
+    /// <param name="enabled">現在の状態</param>
+    private void SetLineRenderer(bool enabled)
+    {
+        // エフェクトの停止
+        if (enabled) {
+            razerCore.gameObject.SetActive(!enabled);
+            razerHit.Stop();
+        }
+        // エフェクトの再生
+        else {
+            razerCore.gameObject.SetActive(!enabled);
+            razerHit.Play();
+        }
+
+        // 非アクティブならアクティブ化、アクティブなら非アクティブ化
+        lineRen.enabled = !enabled;
     }
 
     /// <summary>
