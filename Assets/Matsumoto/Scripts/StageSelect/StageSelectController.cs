@@ -11,6 +11,7 @@ public enum StageSelectState {
 public class StageSelectController : MonoBehaviour {
 
 	public const string LoadSceneKey = "LoadScene";
+	public const string StageProgressKey = "StageProgress";
 
 	private static bool _isFirstLoaded = true;
 
@@ -19,7 +20,6 @@ public class StageSelectController : MonoBehaviour {
 
 	public float MoveSpeed;
 
-	private int _stageProgress;
 	private StageNode _currentSelectedStage;
 	private StageNode _targetStage;
 	private float _playerPositionTarget;
@@ -50,10 +50,12 @@ public class StageSelectController : MonoBehaviour {
 			.ToList();
 
 		// 進行度読み込み
-		GameData.Instance.GetData("StageProgress", ref _stageProgress);
-		_stageProgress = 2;
+		var clearedStages = new HashSet<string>();
+		GameData.Instance.GetData(StageProgressKey, ref clearedStages);
+
+		var stageProgress = clearedStages.Count;
 		// ステージノードのセットアップ(+1はタイトル分)
-		FirstNode.SetUpNode(null, _stageProgress + 1);
+		FirstNode.SetUpNode(null, stageProgress + 1);
 
 		if(_isFirstLoaded) {
 			_isFirstLoaded = false;
@@ -61,7 +63,7 @@ public class StageSelectController : MonoBehaviour {
 		}
 		else {
 			// 進めたステージまで移動
-			_currentSelectedStage = _targetStage = GetStageNode(_stageProgress);
+			_currentSelectedStage = _targetStage = GetStageNode(stageProgress);
 		}
 
 		_playerPositionTarget = GetLength(_targetStage);

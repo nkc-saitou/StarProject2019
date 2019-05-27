@@ -21,7 +21,9 @@ public class StageController : MonoBehaviour {
 	public event Action<StageController> OnGameOver;
 
 	public bool IsCreateStage = true;
+	public bool IsReturnToSelect = true;
 
+	private string _stagePath;
 	private string _followerDataKey;
 	private List<GimmickChip> _gimmicks = new List<GimmickChip>();
 
@@ -36,14 +38,14 @@ public class StageController : MonoBehaviour {
 
 	private void Awake() {
 
-		var stagePath = "TestStage";
-		GameData.Instance.GetData(StageSelectController.LoadSceneKey, ref stagePath);
+		_stagePath = "TestStage";
+		GameData.Instance.GetData(StageSelectController.LoadSceneKey, ref _stagePath);
 
 		// ステージ生成
-		CreateStage(stagePath);
+		CreateStage(_stagePath);
 
 		// フォロワーのデータ取得
-		_followerDataKey = stagePath + "_FollowerData";
+		_followerDataKey = _stagePath + "_FollowerData";
 		GameData.Instance.GetData(_followerDataKey, ref _followerData);
 
 		// ステージにないデータを削除
@@ -105,10 +107,19 @@ public class StageController : MonoBehaviour {
 
 		State = GameState.GameClear;
 
+		// フォロワーとクリアデータを保存
 		GameData.Instance.SetData(_followerDataKey, _followerData);
+
+		var clearedStages = new HashSet<string>();
+		GameData.Instance.GetData(StageSelectController.StageProgressKey, ref clearedStages);
+		clearedStages.Add(_stagePath);
+		GameData.Instance.SetData(StageSelectController.StageProgressKey, clearedStages);
 		GameData.Instance.Save();
 
 		OnGameClear?.Invoke(this);
+
+		if(IsReturnToSelect)
+			SceneChanger.Instance.MoveScene("StageSelect", 1.0f, 1.0f, SceneChangeType.WhiteFade);
 	}
 
 	public void GameOver() {
