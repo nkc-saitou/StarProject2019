@@ -37,10 +37,10 @@ namespace Matsumoto.Character {
 		public Collider2D AttackCollider;
 		public DynamicBone PlayerModel;
 		public ParticleSystem MoveEffect;
-		public ParticleSystem JumpEffect;
+		public GameObject JumpEffectPrefab;
 		public ParticleSystem AttackEffect;
-		public ParticleSystem HitEffect;
-		public ParticleSystem DeathEffectPrefab;
+		public GameObject HitEffectPrefab;
+		public GameObject DeathEffectPrefab;
 
 		private StageController _stageController;
 		private Animator _animator;
@@ -201,7 +201,7 @@ namespace Matsumoto.Character {
 					PlayerRig.AddForce(ToVector(_gravityDirection) * -MaxChargePower);
 
 					Debug.Log(_gravityDirection);
-					var g = Instantiate(JumpEffect, transform);
+					var g = Instantiate(JumpEffectPrefab, transform);
 					g.transform.SetParent(null);
 					Destroy(g.gameObject, 5);
 				}
@@ -562,7 +562,7 @@ namespace Matsumoto.Character {
 			var enemy = collision.gameObject.GetComponent<IEnemy>();
 			if(enemy == null) return;
 
-			var g = Instantiate(HitEffect, transform.position, transform.rotation);
+			var g = Instantiate(HitEffectPrefab, transform.position, transform.rotation);
 			Destroy(g.gameObject, 5);
 
 			enemy.ApplyDamage();
