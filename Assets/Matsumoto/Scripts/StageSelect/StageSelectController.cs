@@ -20,6 +20,8 @@ public class StageSelectController : MonoBehaviour {
 	public Transform PlayerModel;
 
 	public float MoveSpeed;
+	public float CursorWait = 1.0f;
+	public float Dead = 0.3f;
 
 	private StageNode _currentSelectedStage;
 	private StageNode _targetStage;
@@ -83,6 +85,9 @@ public class StageSelectController : MonoBehaviour {
 
 		// BGMを鳴らす
 		AudioManager.FadeIn(1.0f, "vigilante");
+
+		// ステージ選択用
+		StartCoroutine(SelectionInput());
 	}
 	
 	// Update is called once per frame
@@ -90,15 +95,7 @@ public class StageSelectController : MonoBehaviour {
 
 		if(IsFreeze) return;
 
-		if(Input.GetKeyDown(KeyCode.A)) {
-			var prev = _targetStage.PrevStage;
-			if(prev) SetTarget(prev);
-		}
-		if(Input.GetKeyDown(KeyCode.D)) {
-			var next = _targetStage.NextStage;
-			if(next && _targetStage.IsCleared) SetTarget(next);
-		}
-		if(Input.GetKeyDown(KeyCode.F)) {
+		if(Input.GetButtonDown("Attack")) {
 			if(_targetStage != FirstNode && State != StageSelectState.Title)
 
 				MoveScene();
@@ -233,5 +230,28 @@ public class StageSelectController : MonoBehaviour {
 		}
 		return pos;
 
+	}
+
+	IEnumerator SelectionInput() {
+
+		var t = 0.0f;
+
+		while(true) {
+
+			t = Mathf.MoveTowards(t, 0.0f, Time.deltaTime);
+
+			if(Input.GetAxisRaw("Horizontal") < -Dead && t <= 0.0f) {
+				t = CursorWait;
+				var prev = _targetStage.PrevStage;
+				if(prev) SetTarget(prev);
+			}
+			if(Input.GetAxisRaw("Horizontal") > Dead && t >= 0.0f) {
+				t = -CursorWait;
+				var next = _targetStage.NextStage;
+				if(next && _targetStage.IsCleared) SetTarget(next);
+			}
+
+			yield return null;
+		}
 	}
 }
