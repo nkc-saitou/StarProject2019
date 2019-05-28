@@ -28,12 +28,16 @@ public class PauseMenu : MonoBehaviour
     [SerializeField]
     private GameObject selectImage;
 
-	// Use this for initialization
+    // 入力値
+    Vector2 inputVec;
+    // 押し続けた時間
+    private float axisTime; 
+    
 	void Start () {
-		
+        var currentCanvas = GetComponent<Canvas>();
+        currentCanvas.worldCamera = Camera.main;
 	}
 	
-	// Update is called once per frame
 	void Update () {
         MenuSelect();
 	}
@@ -43,10 +47,12 @@ public class PauseMenu : MonoBehaviour
     /// </summary>
     private void BGM_Action()
     {
-        if (Input.GetKeyDown(KeyCode.S)) menuState += 1;
+        // ステートの更新
+        if (inputVec.y < 0.0f && axisTime == 0.0f) menuState += 1;
 
-        if (Input.GetKeyDown(KeyCode.A)) VolumeChange(menuState, -0.1f);
-        if (Input.GetKeyDown(KeyCode.D)) VolumeChange(menuState, 0.1f);
+        // 音量調整
+        if (inputVec.x < 0.0f && axisTime == 0.0f || inputVec.x < 0.0f && axisTime > 0.25f) VolumeChange(menuState, -0.1f);
+        if (inputVec.x > 0.0f && axisTime == 0.0f || inputVec.x > 0.0f && axisTime > 0.25f) VolumeChange(menuState, 0.1f);
 
         SetPosition();
     }
@@ -56,11 +62,13 @@ public class PauseMenu : MonoBehaviour
     /// </summary>
     private void SE_Action()
     {
-        if (Input.GetKeyDown(KeyCode.S)) menuState += 1;
-        if (Input.GetKeyDown(KeyCode.W)) menuState -= 1;
+        // ステートの更新
+        if (inputVec.y < 0.0f && axisTime == 0.0f) menuState += 1;
+        if (inputVec.y > 0.0f && axisTime == 0.0f) menuState -= 1;
 
-        if (Input.GetKeyDown(KeyCode.A)) VolumeChange(menuState, -0.1f);
-        if (Input.GetKeyDown(KeyCode.D)) VolumeChange(menuState, 0.1f);
+        // 音量調整
+        if (inputVec.x < 0.0f && axisTime == 0.0f || inputVec.x < 0.0f && axisTime > 0.25f) VolumeChange(menuState, -0.1f);
+        if (inputVec.x > 0.0f && axisTime == 0.0f || inputVec.x > 0.0f && axisTime > 0.25f) VolumeChange(menuState, 0.1f);
 
         SetPosition();
     }
@@ -70,12 +78,14 @@ public class PauseMenu : MonoBehaviour
     /// </summary>
     private void STAGESELECT_Action()
     {
-        if (Input.GetKeyDown(KeyCode.W)) menuState -= 1;
-        if (Input.GetKeyDown(KeyCode.D)) menuState += 1;
+        // ステートの更新
+        if (inputVec.y > 0.0f && axisTime == 0.0f) menuState -= 1;
+        if (inputVec.x > 0.0f && axisTime == 0.0f) menuState += 1;
 
         SetPosition();
 
-        if (Input.GetKeyDown(KeyCode.Space)) SceneChange(menuState);
+        // ステージセレクト
+        if (Input.GetButtonDown("Attack")) SceneChange(menuState);
     }
 
     /// <summary>
@@ -83,18 +93,23 @@ public class PauseMenu : MonoBehaviour
     /// </summary>
     private void RETRY_Action()
     {
-        if (Input.GetKeyDown(KeyCode.W)) menuState -= 2;
-        if (Input.GetKeyDown(KeyCode.A)) menuState -= 1;
+        // ステートの更新
+        if (inputVec.y > 0.0f && axisTime == 0.0f) menuState -= 2;
+        if (inputVec.x < 0.0f && axisTime == 0.0f) menuState -= 1;
 
         SetPosition();
 
-        if (Input.GetKeyDown(KeyCode.Space)) SceneChange(menuState);
+        // リトライ
+        if (Input.GetButtonDown("Attack")) SceneChange(menuState);
     }
 
     // メニューの操作
     private void MenuSelect()
     {
-        // 項目の更新
+        // 入力値を格納
+        inputVec = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+
+        // 項目ごとの処理を実行
         switch (menuState)
         {
             case MenuState.BGM:
@@ -112,6 +127,25 @@ public class PauseMenu : MonoBehaviour
             default:
                 break;
         }
+
+        // インプットの入力時間の更新
+        axisTime = GetInputTime();
+    }
+
+    /// <summary>
+    /// 入力時間を返す
+    /// </summary>
+    /// <returns>入力し続けている時間</returns>
+    float GetInputTime()
+    {
+        // 入力がないなら0を返す
+        if (inputVec == Vector2.zero) return 0.0f;
+
+        // 時間の更新
+        var time = axisTime;
+        time += Time.deltaTime;
+
+        return time;
     }
 
     /// <summary>
@@ -151,17 +185,20 @@ public class PauseMenu : MonoBehaviour
     /// <param name="_value">入力値</param>
     private void VolumeChange(MenuState _currentState, float _value)
     {
+        // Sliderの見た目の更新
         volumeSlider[(int)_currentState].value += _value;
 
+        // 入力時間をリセット
+        axisTime = 0.0f;
+
+        // ステートに合わせて音量調整
         switch (_currentState)
         {
             case MenuState.BGM:
                 Matsumoto.Audio.AudioManager.SetBGMVolume(volumeSlider[(int)_currentState].value);
-                Matsumoto.Audio.AudioManager.GetBGMVolume();
                 break;
             case MenuState.SE:
                 Matsumoto.Audio.AudioManager.SetSEVolume(volumeSlider[(int)_currentState].value);
-                Matsumoto.Audio.AudioManager.GetSEVolume();
                 break;
         }
     } 
