@@ -92,7 +92,7 @@ public class PatrolEnemy : EnemyBase, IEnemy
     protected override void CheckAction()
     {
         // ターゲットがいない、アクション不可能、カメラ範囲外ならリターン
-        if (target == null || canAction == false || visible == false) return;
+        if (target == null || canAction == false) return;
 
         // プレイヤーとの距離を検出
         playerDis = CheckDistanceX(target.transform.position);
@@ -117,7 +117,7 @@ public class PatrolEnemy : EnemyBase, IEnemy
         int groundLayer = LayerMask.GetMask("Player", "PlayerFollower", "Ignore Raycast");
 
         // LineRendererをアクティブにする
-        if (lineRen.enabled == false) {
+        if (lineRen.enabled == false && visible == true) {
             SetLineRenderer(lineRen.enabled);
             StartCoroutine(IntervalAction(2.0f));
         }
