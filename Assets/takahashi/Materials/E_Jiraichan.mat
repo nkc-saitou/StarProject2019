@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 6
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_Name: E_Jiraichan
+  m_Shader: {fileID: 4800000, guid: ae0fff53b324e724399b121d33926d2d, type: 3}
+  m_ShaderKeywords: ETC1_EXTERNAL_ALPHA
+  m_LightmapFlags: 0
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _TextureSample0:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TileMapTextureRValue:
+        m_Texture: {fileID: 2800000, guid: 0e99bf7577b6f524098e9321ea27d225, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _texcoord:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Floats:
+    - _01Ratio: 1000
+    - _Cutoff: 0.3
+    - _Emission: 2
+    - _EyeEmission: 1
+    - _FluidBackColorDepth: 1
+    - _MoveSpeed: 0.1
+    - _NoiseTillingSize: 1
+    - __dirty: 0
+    m_Colors:
+    - _EyeColor: {r: 1, g: 0.96657693, b: 0, a: 0}
+    - _FluidBackColor: {r: 0, g: 0, b: 0, a: 0}
+    - _FluidColor: {r: 1, g: 0, b: 0.07585334, a: 0}
+    - _GroundColor: {r: 0.8980392, g: 0.8980392, b: 0.8980392, a: 0}
+    - _UndergroundColor: {r: 0.25490198, g: 0.25490198, b: 0.25490198, a: 0}
