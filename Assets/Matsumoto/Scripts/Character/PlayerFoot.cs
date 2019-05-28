@@ -22,7 +22,7 @@ namespace Matsumoto.Character {
 			if(Time.time - playedTime < MinPlay) return;
 			playedTime = Time.time;
 
-			AudioManager.PlaySE("FootStep", 0.75f);
+			AudioManager.PlaySE("FootStep", 1f, position: collision.transform.position);
 		}
 	}
 }
