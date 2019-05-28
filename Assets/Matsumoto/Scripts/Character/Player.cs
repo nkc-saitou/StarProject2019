@@ -86,6 +86,7 @@ namespace Matsumoto.Character {
 			set {
 				_isFreeze = value;
 				PlayerRig.simulated = !value;
+
 			}
 		}
 
@@ -237,8 +238,11 @@ namespace Matsumoto.Character {
 
 		private void FixedUpdate() {
 
-			Move();
+			if (IsFreeze) return;
 
+			var input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+
+			Move(input);
 			AnimationUpdate();
 		}
 
@@ -279,12 +283,7 @@ namespace Matsumoto.Character {
 
 		}
 
-		private void Move() {
-
-			if(IsFreeze) return;
-
-			// calc speed
-			var input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+		private void Move(Vector2 input) {
 
 			var addSpeed = 0.0f;
 			if(_gravityDirection == Angle.Down)
@@ -361,7 +360,6 @@ namespace Matsumoto.Character {
 
 			var speed = RollSpeed / 2;
 			if(IsRotate) speed = 0;
-			if(IsFreeze) speed = 0;
 
 			_animator.SetFloat("Speed", speed);
 		}
@@ -555,6 +553,32 @@ namespace Matsumoto.Character {
 			PlayerRig.velocity = vel;
 			PlayerRig.isKinematic = false;
 			AnimationUpdate();
+		}
+
+		/// <summary>
+		/// 操作をやめる
+		/// </summary>
+		public void Stop() {
+			IsFreeze = true;
+			PlayerRig.simulated = true;
+			PlayerRig.velocity *= new Vector2(0, 1);
+			RollSpeed = 0;
+			AnimationUpdate();
+		}
+
+		public IEnumerator MoveTo(Vector2 relationalPositon, float speed = 1.0f, float eps = 0.5f) {
+
+			var endPos = (Vector2)transform.position + relationalPositon;
+			Debug.Log(endPos);
+			var diff = endPos - (Vector2)transform.position;
+			while (diff.sqrMagnitude > eps * eps) {
+				var input = diff.normalized;
+				Move(input);
+				AnimationUpdate();
+				yield return null;
+				diff = endPos - (Vector2)transform.position;
+			}
+
 		}
 
 		private void OnTriggerEnter2D(Collider2D collision) {
