@@ -19,6 +19,9 @@ namespace Matsumoto.Audio {
 
 		private readonly AudioMixerGroup[] _mixerGroups = new AudioMixerGroup[2];//ミキサーのグループ [0]SE [1]BGM
 
+		private AudioSource _SESourcePrefab;
+		private AudioSource _BGMSourcePrefab;
+
 		private Dictionary<string, AudioClipInfo> _SEclips;			//SE再生用リスト
 		private Dictionary<string, AudioClip> _BGMclips;			//BGM再生用リスト
 
@@ -35,7 +38,11 @@ namespace Matsumoto.Audio {
 		/// </summary>
 		public static void Load() {
 
-			//LoadMixer
+			// LoadPrefab
+			Instance._SESourcePrefab = Resources.Load<AudioSource>("Sounds/SESourcePrefab");
+			Instance._BGMSourcePrefab = Resources.Load<AudioSource>("Sounds/BGMSourcePrefab");
+
+			// LoadMixer
 			Instance.Mixer = Resources.Load<AudioMixer>(MixerPath);
 			if(Instance.Mixer) {
 				Instance._mixerGroups[0] = Instance.Mixer.FindMatchingGroups("SE")[0];
@@ -46,13 +53,13 @@ namespace Matsumoto.Audio {
 			}
 
 
-			//BGM読み込み
+			// BGM読み込み
 			Instance._BGMclips = new Dictionary<string, AudioClip>();
 			foreach(var item in Resources.LoadAll<AudioClip>(BGMPath)) {
 				Instance._BGMclips.Add(item.name, item);
 			}
 
-			//SE読み込み
+			// SE読み込み
 			Instance._SEclips = new Dictionary<string, AudioClipInfo>();
 			foreach(var item in Resources.LoadAll<AudioClip>(SEPath)) {
 				Instance._SEclips.Add(item.name, new AudioClipInfo(item));
@@ -75,33 +82,35 @@ namespace Matsumoto.Audio {
 		/// <param name="vol">音量</param>
 		/// <param name="autoDelete">再生終了時にSEを削除するか</param>
 		/// <returns>再生しているSE</returns>
-		public static AudioSource PlaySE(string SEName, float vol = 1.0f, bool autoDelete = true) {
+		public static AudioSource PlaySE(string SEName, float vol = 1.0f, bool autoDelete = true, Vector3 position = new Vector3()) {
 
-			//SE取得
+			// SE取得
 			var info = GetSEInfo(SEName);
 			if(info == null) return null;
 
 			if(info.StockList.Count > 0) {
-				//stockListから空で且つ番号が一番若いSEInfoを受け取る
+				// stockListから空で且つ番号が一番若いSEInfoを受け取る
 				var seInfo = info.StockList.Values[0];
 
-				//ストックを削除
+				// ストックを削除
 				info.StockList.Remove(seInfo.Index);
 
-				//情報を取り付ける
-				//Poolしたい
-				var src = new GameObject("[Audio SE - " + SEName + "]").AddComponent<AudioSource>();
+				// 情報を取り付ける
+				// Poolしたい
+				var src = Instantiate(Instance._SESourcePrefab);
+				src.name = "[Audio BGM - " + SEName + "]";
 				src.transform.SetParent(Instance.transform);
+				src.transform.position = position;
 				src.clip = info.Clip;
 				src.volume = seInfo.Volume * vol;
 				src.outputAudioMixerGroup = Instance._mixerGroups[0];
 				src.Play();
 
-				//管理用情報を付加
+				// 管理用情報を付加
 				var playSE = src.gameObject.AddComponent<PlayingSE>();
 				playSE.OnDestroyEvent += () => { info.StockList.Add(seInfo.Index, seInfo); };
 
-				//自動削除の場合は遅延で削除を実行する
+				// 自動削除の場合は遅延で削除を実行する
 				if(autoDelete)
 					Destroy(src.gameObject, src.clip.length + 0.1f);
 
@@ -118,15 +127,17 @@ namespace Matsumoto.Audio {
 		/// <param name="vol">音量</param>
 		/// <param name="isLoop">ループ再生するか</param>
 		/// <returns>再生しているSE</returns>
-		public static AudioSource PlayBGM(string BGMName, float vol = 1.0f, bool isLoop = true) {
+		public static AudioSource PlayBGM(string BGMName, float vol = 1.0f, bool isLoop = true, Vector3 position = new Vector3()) {
 
-			//BGM取得
+			// BGM取得
 			var clip = GetBGM(BGMName);
 			if(!clip) return null;
 			if(Instance._currentPlayingBGM) Destroy(Instance._currentPlayingBGM.gameObject);
 
-			var src = new GameObject("[Audio BGM - " + BGMName + "]").AddComponent<AudioSource>();
+			var src = Instantiate(Instance._BGMSourcePrefab);
+			src.name = "[Audio BGM - " + BGMName + "]";
 			src.transform.SetParent(Instance.transform);
+			src.transform.position = position;
 			src.clip = clip;
 			src.volume = vol;
 			src.outputAudioMixerGroup = Instance._mixerGroups[1];
@@ -288,11 +299,11 @@ namespace Matsumoto.Audio {
 		/// <returns></returns>
 		IEnumerator FadeInAnim(float fadeTime, string BGMName, float vol, bool isLoop) {
 
-			//BGM取得
+			// BGM取得
 			var clip = GetBGM(BGMName);
 			if(!clip) yield break;
 
-			//初期設定
+			// 初期設定
 			_fadeInAudio = new GameObject("[Audio BGM - " + BGMName + " - FadeIn ]").AddComponent<AudioSource>();
 			_fadeInAudio.transform.SetParent(Instance.transform);
 			_fadeInAudio.clip = clip;
@@ -300,7 +311,7 @@ namespace Matsumoto.Audio {
 			_fadeInAudio.outputAudioMixerGroup = _mixerGroups[1];
 			_fadeInAudio.Play();
 
-			//フェードイン
+			// フェードイン
 			var t = 0.0f;
 			while((t += Time.deltaTime / fadeTime) < 1.0f) {
 				_fadeInAudio.volume = t * vol;
@@ -331,9 +342,9 @@ namespace Matsumoto.Audio {
 
 			var src = _currentPlayingBGM;
 
-			//フェードイン中にフェードアウトが呼ばれた場合
+			// フェードイン中にフェードアウトが呼ばれた場合
 			if(!src) {
-				//フェードイン処理停止
+				// フェードイン処理停止
 				Instance.StopCoroutine(_fadeInCol);
 				src = _fadeInAudio;
 
@@ -343,7 +354,7 @@ namespace Matsumoto.Audio {
 			src.name = "[Audio BGM - " + _currentPlayedBGMName + " - FadeOut ]";
 			_currentPlayingBGM = null;
 
-			//フェードアウト
+			// フェードアウト
 			var t = 0.0f;
 			float vol = src.volume;
 			while((t += Time.deltaTime / fadeTime) < 1.0f) {
