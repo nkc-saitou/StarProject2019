@@ -80,14 +80,6 @@ public class StageController : MonoBehaviour {
 		if(Input.GetKeyDown(KeyCode.Escape))
 			PauseSystem.Instance.IsPause = !PauseSystem.Instance.IsPause;
 
-		if(State == GameState.GameOver) {
-			//リトライ
-			if(Input.GetButtonDown("Attack")) {
-                var sceneName = SceneManager.GetActiveScene().name;
-                SceneChanger.Instance.MoveScene(sceneName, 0.2f, 0.2f, SceneChangeType.BlackFade);
-			}
-		}
-
 	}
 
 	private void CreateStage(string stagePath) {
@@ -131,6 +123,8 @@ public class StageController : MonoBehaviour {
 	public void GameOver() {
 
 		Debug.Log("GameOver!");
+		State = GameState.GameOver;
+
 		OnGameOver?.Invoke(this);
 
 		StartCoroutine(GameOverWait());
@@ -138,6 +132,11 @@ public class StageController : MonoBehaviour {
 
 	IEnumerator GameOverWait() {
 		yield return new WaitForSeconds(1);
-		State = GameState.GameOver;
+
+		// BGMを止める
+		AudioManager.FadeOut(0.2f);
+
+		var sceneName = SceneManager.GetActiveScene().name;
+		SceneChanger.Instance.MoveScene(sceneName, 0.2f, 0.2f, SceneChangeType.BlackFade);
 	}
 }
