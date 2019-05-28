@@ -164,7 +164,10 @@ namespace StarProject2019.Saitou
 
                 // 値がマイナスになったら値を０に
                 if (RotationAmount < ReturnRotateAmount)
+                {
                     RotationAmount = ReturnRotateAmount;
+                    _animator.SetFloat("Speed", 0);
+                }
             }
             // 左方向に回していた場合
             else if(RotationAmount < ReturnRotateAmount &&
@@ -175,7 +178,10 @@ namespace StarProject2019.Saitou
 
                 // 値がプラスになったら値を０
                 if (RotationAmount > ReturnRotateAmount)
+                {
                     RotationAmount = ReturnRotateAmount;
+                    _animator.SetFloat("Speed", 0);
+                }
             }
         }
 
