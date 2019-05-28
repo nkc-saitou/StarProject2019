@@ -82,7 +82,7 @@ public class StageSelectController : MonoBehaviour {
 		Position = _playerPositionTarget;
 
 		// BGMを鳴らす
-		AudioManager.FadeIn(1.0f, "distantfuture");
+		AudioManager.FadeIn(1.0f, "vigilante");
 	}
 	
 	// Update is called once per frame
