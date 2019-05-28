@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Audio;
 
-namespace DDD.Matsumoto.Audio {
+namespace Matsumoto.Audio {
 
 	/// <summary>
 	/// 音の管理をする

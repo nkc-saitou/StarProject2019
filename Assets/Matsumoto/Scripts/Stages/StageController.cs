@@ -6,6 +6,7 @@ using UnityEngine.Tilemaps;
 using System;
 using UnityEngine.SceneManagement;
 using Matsumoto.Gimmick;
+using Matsumoto.Audio;
 
 public enum GameState {
 	StartUp,
@@ -23,7 +24,7 @@ public class StageController : MonoBehaviour {
 	public bool IsCreateStage = true;
 	public bool IsReturnToSelect = true;
 
-	private string _stagePath;
+	public string StagePath = "TestStage";
 	private string _followerDataKey;
 	private List<GimmickChip> _gimmicks = new List<GimmickChip>();
 
@@ -38,14 +39,13 @@ public class StageController : MonoBehaviour {
 
 	private void Awake() {
 
-		_stagePath = "TestStage";
-		GameData.Instance.GetData(StageSelectController.LoadSceneKey, ref _stagePath);
+		GameData.Instance.GetData(StageSelectController.LoadSceneKey, ref StagePath);
 
 		// ステージ生成
-		CreateStage(_stagePath);
+		CreateStage(StagePath);
 
 		// フォロワーのデータ取得
-		_followerDataKey = _stagePath + "_FollowerData";
+		_followerDataKey = StagePath + "_FollowerData";
 		GameData.Instance.GetData(_followerDataKey, ref _followerData);
 
 		// ステージにないデータを削除
@@ -67,6 +67,10 @@ public class StageController : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+
+		// BGMを鳴らす
+		AudioManager.FadeIn(1.0f, "Comet_Highway");
+
 		GameStart();
 	}
 	
@@ -112,14 +116,16 @@ public class StageController : MonoBehaviour {
 
 		var clearedStages = new HashSet<string>();
 		GameData.Instance.GetData(StageSelectController.StageProgressKey, ref clearedStages);
-		clearedStages.Add(_stagePath);
+		clearedStages.Add(StagePath);
 		GameData.Instance.SetData(StageSelectController.StageProgressKey, clearedStages);
 		GameData.Instance.Save();
 
 		OnGameClear?.Invoke(this);
 
-		if(IsReturnToSelect)
+		if(IsReturnToSelect) {
+			AudioManager.FadeOut(1.0f);
 			SceneChanger.Instance.MoveScene("StageSelect", 1.0f, 1.0f, SceneChangeType.WhiteFade);
+		}
 	}
 
 	public void GameOver() {

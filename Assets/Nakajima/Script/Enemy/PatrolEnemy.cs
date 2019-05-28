@@ -16,9 +16,19 @@ public class PatrolEnemy : EnemyBase, IEnemy
     // 目標地点
     private Vector2 goalPos;
 
-    // 攻撃用オブジェクト
+    // 自身のLineRenderer
+    private LineRenderer lineRen;
+
+    // LineRendererの描画地点
     [SerializeField]
-    private GameObject bombObj;
+    private GameObject startObj;
+    private Vector3 endPos;
+
+    // レーザー用のパーティクル
+    [SerializeField]
+    private ParticleSystem razerCore;
+    [SerializeField]
+    private ParticleSystem razerHit;
 
     // 移動に使う変数
     [SerializeField]
@@ -28,6 +38,8 @@ public class PatrolEnemy : EnemyBase, IEnemy
     // Use this for initialization
     void Start()
     {
+        lineRen = GetComponent<LineRenderer>();
+        lineRen.enabled = false;
         target = GameObject.Find("Player");
         currentPos = transform.position;
         originPos = transform.position;
@@ -89,11 +101,36 @@ public class PatrolEnemy : EnemyBase, IEnemy
     /// </summary>
     public void Action()
     {
-        Instantiate(bombObj, transform.position - new Vector3(0.0f, 1.5f), Quaternion.identity);
+        // プレイヤー判定用レイヤー
+        int playerLayer = LayerMask.GetMask("Player", "PlayerFollower");
+        // 地面判定用レイヤー
+        int groundLayer = LayerMask.GetMask("Player", "PlayerFollower", "Ignore Raycast");
 
-        canAction = false;
-        
-        StartCoroutine(IntervalAction(2.0f));
+        // LineRendererをアクティブにする
+        if (lineRen.enabled == false) {
+            SetLineRenderer(lineRen.enabled);
+            StartCoroutine(IntervalAction(2.0f));
+        }
+
+        // 地面判定
+        RaycastHit2D groundHit = Physics2D.Raycast(transform.position, -transform.up, 500.0f, ~groundLayer);
+        // 地面の地点取得
+        endPos = groundHit.point;
+        razerHit.transform.position = endPos;
+
+        // Lineの位置を定義
+        lineRen.SetPosition(0, startObj.transform.position);
+        lineRen.SetPosition(1, endPos);
+        // Lineの長さを定義
+        lineRen.startWidth = 0.1f;
+        lineRen.endWidth = 0.1f;
+
+        // プレイヤー判定
+        RaycastHit2D playerHit = Physics2D.Raycast(transform.position, -transform.up, 500.0f, playerLayer);
+        if(playerHit.collider != null) {
+            var player = playerHit.collider.gameObject.GetComponent<Matsumoto.Character.Player>();
+            if (player != null) player.ApplyDamage(gameObject, DamageType.Enemy);
+        }
     }
 
     /// <summary>
@@ -105,7 +142,46 @@ public class PatrolEnemy : EnemyBase, IEnemy
     {
         yield return new WaitForSeconds(_interval);
 
-        canAction = true;
+        if (canAction == true) {
+            canAction = false;
+            StartCoroutine(IntervalAction(1.0f));
+        }
+        else canAction = true;
+
+        if (lineRen.enabled == true) SetLineRenderer(lineRen.enabled);
+    }
+
+    /// <summary>
+    /// LineRendererのアクティブ設定
+    /// </summary>
+    /// <param name="enabled">現在の状態</param>
+    private void SetLineRenderer(bool enabled)
+    {
+        // エフェクトの停止
+        if (enabled) {
+            razerCore.gameObject.SetActive(!enabled);
+            razerHit.Stop();
+        }
+        // エフェクトの再生
+        else {
+            razerCore.gameObject.SetActive(!enabled);
+            razerHit.Play();
+        }
+
+        // 非アクティブならアクティブ化、アクティブなら非アクティブ化
+        lineRen.enabled = !enabled;
+    }
+
+    /// <summary>
+    /// 当たり判定
+    /// </summary>
+    /// <param name="col">当たったコリジョン</param>
+    void OnCollisionEnter2D(Collision2D col)
+    {
+        var player = col.gameObject.GetComponent<Matsumoto.Character.Player>();
+        if (player == null) return;
+
+        player.ApplyDamage(gameObject, DamageType.Enemy);
     }
 
     /// <summary>
