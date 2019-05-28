@@ -29,6 +29,7 @@ public class StageSelectController : MonoBehaviour {
 	private Transform _playerBody;
 	private float _moveSpeedMag = 1;
 	private List<IStageMoveEvent> _eventList;
+	private bool _isSceneMoving;
 
 	public float Position;
 
@@ -67,6 +68,7 @@ public class StageSelectController : MonoBehaviour {
 		else {
 			// 進めたステージまで移動
 			_currentSelectedStage = _targetStage = GetStageNode(stageProgress);
+			if(_currentSelectedStage != FirstNode) State = StageSelectState.Select;
 		}
 
 		_playerPositionTarget = GetLength(_targetStage);
@@ -130,6 +132,9 @@ public class StageSelectController : MonoBehaviour {
 
 	private void MoveScene() {
 		if(!_currentSelectedStage) return;
+		if(_isSceneMoving) return;
+		_isSceneMoving = true;
+
 		Debug.Log("MoveScene");
 
 		// ステージ用BGM
