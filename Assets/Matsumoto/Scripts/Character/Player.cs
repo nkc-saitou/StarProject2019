@@ -583,6 +583,8 @@ namespace Matsumoto.Character {
 
 		private void OnTriggerEnter2D(Collider2D collision) {
 
+			if(!IsAttacking) return;
+
 			var enemy = collision.gameObject.GetComponent<IEnemy>();
 			if(enemy == null) return;
 
