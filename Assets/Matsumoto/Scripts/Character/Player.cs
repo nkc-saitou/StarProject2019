@@ -191,8 +191,21 @@ namespace Matsumoto.Character {
 				_canDash = false;
 			}
 
+			MorphUpdate(Input.GetButton("Morph"));
+
+			if(Input.GetKeyDown(KeyCode.P)) {
+				ApplyDamage(gameObject, DamageType.Enemy);
+			}
+
+			// エフェクト操作
+			var main = AttackEffect.main;
+			main.startRotation = new ParticleSystem.MinMaxCurve(_body.transform.eulerAngles.z);
+		}
+
+		private void MorphUpdate(bool isMorph) {
+
 			var morph = _morph;
-			morph += (Input.GetButton("Morph") ? 1 : -1) * Time.deltaTime * MorphSpeed;
+			morph += (isMorph ? 1 : -1) * Time.deltaTime * MorphSpeed;
 			morph = Mathf.Clamp(morph, 0, 1);
 			if(morph != _morph) {
 
@@ -216,14 +229,6 @@ namespace Matsumoto.Character {
 				else if(morph == 1) ChangeState(PlayerState.Circle);
 				else ChangeState(PlayerState.Morphing);
 			}
-
-			if(Input.GetKeyDown(KeyCode.P)) {
-				ApplyDamage(gameObject, DamageType.Enemy);
-			}
-
-			// エフェクト操作
-			var main = AttackEffect.main;
-			main.startRotation = new ParticleSystem.MinMaxCurve(_body.transform.eulerAngles.z);
 		}
 
 		private bool CheckCanAttack() {
@@ -561,9 +566,10 @@ namespace Matsumoto.Character {
 		public void Stop() {
 			IsFreeze = true;
 			PlayerRig.simulated = true;
-			PlayerRig.velocity *= new Vector2(0, 1);
+			PlayerRig.velocity = new Vector2(0, -Mathf.Abs(PlayerRig.velocity.y));
 			RollSpeed = 0;
 			AnimationUpdate();
+			StartCoroutine(MorphAnimation(PlayerState.Star, MorphSpeed));
 		}
 
 		public IEnumerator MoveTo(Vector2 relationalPositon, float speed = 1.0f, float eps = 0.5f) {
