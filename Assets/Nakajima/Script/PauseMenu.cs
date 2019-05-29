@@ -34,8 +34,7 @@ public class PauseMenu : MonoBehaviour
     private float axisTime; 
     
 	void Start () {
-        var currentCanvas = GetComponent<Canvas>();
-        currentCanvas.worldCamera = Camera.main;
+
 	}
 	
 	void Update () {
@@ -143,7 +142,7 @@ public class PauseMenu : MonoBehaviour
 
         // 時間の更新
         var time = axisTime;
-        time += Time.deltaTime;
+        time += Time.unscaledDeltaTime;
 
         return time;
     }
