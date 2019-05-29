@@ -21,7 +21,7 @@ public class StageController : MonoBehaviour {
 	public event Action<StageController> OnGameClear;
 	public event Action<StageController> OnGameOver;
 
-	public GameObject PauseCamvas;
+	public PauseMenu PauseMenuCamvas;
 
 	public bool IsCreateStage = true;
 	public bool IsReturnToSelect = true;
@@ -67,7 +67,8 @@ public class StageController : MonoBehaviour {
 			item.GimmickStart();
 		}
 
-		PauseCamvas.SetActive(false);
+		PauseMenuCamvas.SetStageController(this);
+		PauseMenuCamvas.gameObject.SetActive(false);
 
 	}
 
@@ -85,7 +86,7 @@ public class StageController : MonoBehaviour {
 
 		if (Input.GetKeyDown(KeyCode.Escape) && CanPause) {
 			PauseSystem.Instance.IsPause = !PauseSystem.Instance.IsPause;
-			PauseCamvas.SetActive(!PauseCamvas.activeSelf);
+			PauseMenuCamvas.gameObject.SetActive(!PauseMenuCamvas.gameObject.activeSelf);
 		}
 
 	}
