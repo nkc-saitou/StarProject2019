@@ -16,6 +16,9 @@ public class PauseMenu : MonoBehaviour
     }
     public MenuState menuState;
 
+    // StageControllerのインスタンス
+    private StageController stageCon;
+
     // 項目の位置
     [SerializeField]
     private GameObject[] menuList;
@@ -40,6 +43,15 @@ public class PauseMenu : MonoBehaviour
 	void Update () {
         MenuSelect();
 	}
+
+    /// <summary>
+    /// StageControllerのセットアップ
+    /// </summary>
+    /// <param name="_stageCon">StageControllerのインスタンス</param>
+    public void SetStageController(StageController _stageCon)
+    {
+        stageCon = _stageCon;
+    }
 
     /// <summary>
     /// BGMステートの処理
@@ -163,6 +175,9 @@ public class PauseMenu : MonoBehaviour
     /// <param name="_currentState">現在のステート</param>
     private void SceneChange(MenuState _currentState)
     {
+        // シーン遷移中はポーズ不可
+        stageCon.CanPause = false;
+
         switch (_currentState)
         {
             case MenuState.STAGESELECT:
