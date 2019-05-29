@@ -19,9 +19,6 @@ namespace Matsumoto.Gimmick {
 		public override void GimmickStart() {
 			base.GimmickStart();
 
-			_randomTime = Random.Range(0, 1);
-			_startY = transform.position.y;
-
 			if(Controller.FollowerData.FindedIndexList
 				.Exists(x => x == FollowerIndex)) {
 				Destroy(gameObject);
@@ -29,6 +26,9 @@ namespace Matsumoto.Gimmick {
 		}
 
 		private void Start() {
+			_randomTime = Random.Range(0, 1);
+			_startY = transform.position.y;
+
 			GetComponentInChildren<SpriteSkin>().enabled = true;
 		}
 

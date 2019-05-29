@@ -58,8 +58,9 @@ public class StageSelectController : MonoBehaviour {
 		GameData.Instance.GetData(StageProgressKey, ref clearedStages);
 
 		var stageProgress = clearedStages.Count;
+		var followerCount = 0;
 		// ステージノードのセットアップ(+1はタイトル分)
-		FirstNode.SetUpNode(null, stageProgress + 1);
+		FirstNode.SetUpNode(null, stageProgress + 1, ref followerCount);
 
 		if(_isFirstLoaded) {
 			_isFirstLoaded = false;

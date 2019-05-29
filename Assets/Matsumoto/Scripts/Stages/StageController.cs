@@ -17,6 +17,8 @@ public enum GameState {
 
 public class StageController : MonoBehaviour {
 
+	public const string StageFollowerDataTarget = "_FollowerData";
+
 	public event Action<StageController> OnGameStart;
 	public event Action<StageController> OnGameClear;
 	public event Action<StageController> OnGameOver;
@@ -48,7 +50,7 @@ public class StageController : MonoBehaviour {
 		CreateStage(StagePath);
 
 		// フォロワーのデータ取得
-		_followerDataKey = StagePath + "_FollowerData";
+		_followerDataKey = StagePath + StageFollowerDataTarget;
 		GameData.Instance.GetData(_followerDataKey, ref _followerData);
 
 		// ステージにないデータを削除

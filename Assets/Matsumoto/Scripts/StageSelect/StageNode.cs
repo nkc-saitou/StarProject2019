@@ -8,6 +8,9 @@ public class StageNode : MonoBehaviour {
 
 	public string TargetStageName;
 
+	public GameObject FollowerModelPrefab;
+	public List<Transform> FindedFollowerPositions = new List<Transform>();
+
 	private float _freq = 1.0f;
 	private float _amp = 1.0f;
 	private Transform _lab;
@@ -42,7 +45,7 @@ public class StageNode : MonoBehaviour {
 	}
 
 	// Use this for initialization
-	public void SetUpNode(StageNode prevStage, int clearedCount) {
+	public void SetUpNode(StageNode prevStage, int clearedCount, ref int followerCount) {
 
 		if(transform.childCount > 0)
 			_lab = transform.GetChild(0);
@@ -57,8 +60,21 @@ public class StageNode : MonoBehaviour {
 			spr.color = IsCleared ? Color.white : Color.gray;
 		}
 
+		// 助けた数を表示
+		FollowerFindData followerData = new FollowerFindData();
+		GameData.Instance.GetData(TargetStageName + StageController.StageFollowerDataTarget, ref followerData);
+		var count = followerData.FindedIndexList.Count;
+		followerCount += count;
+		for (int i = 0; i < count; i++) {
+			if(FindedFollowerPositions.Count < i) break;
+			var t = FindedFollowerPositions[i];
+			var f = Instantiate(FollowerModelPrefab, t.position, t.rotation);
+			f.transform.localScale = Vector3.one * 0.5f;
+		}
+
+
 		if(NextStage) {
-			NextStage.SetUpNode(this, --clearedCount);
+			NextStage.SetUpNode(this, --clearedCount, ref followerCount);
 		}
 	}
 	
@@ -68,7 +84,6 @@ public class StageNode : MonoBehaviour {
 		if(IsSelected && _lab && !_isPlayAnim) {
 			StartCoroutine(SelectedAnim());
 		}
-
 	}
 
 	private IEnumerator SelectedAnim() {
