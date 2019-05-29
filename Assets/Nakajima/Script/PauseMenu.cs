@@ -178,6 +178,7 @@ public class PauseMenu : MonoBehaviour
         // シーン遷移中はポーズ不可
         stageCon.CanPause = false;
 
+        // ステートごとにシーン遷移
         switch (_currentState)
         {
             case MenuState.STAGESELECT:
