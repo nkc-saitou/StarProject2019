@@ -50,15 +50,16 @@ public class SceneChanger : SingletonMonoBehaviour<SceneChanger> {
 
 		_ratio = 0;
 		while(_ratio < 1.0f) {
-			_ratio = Mathf.Min(_ratio + Time.deltaTime / fadeInTime, 1.0f);
+			_ratio = Mathf.Min(_ratio + Time.unscaledDeltaTime / fadeInTime, 1.0f);
 			yield return null;
 		}
 
 		operation.allowSceneActivation = true;
 		yield return operation;
+		PauseSystem.Instance.Resume();
 
 		while(_ratio > 0.0f) {
-			_ratio = Mathf.Max(_ratio - Time.deltaTime / fadeOutTime, 0.0f);
+			_ratio = Mathf.Max(_ratio - Time.unscaledDeltaTime / fadeOutTime, 0.0f);
 			yield return null;
 		}
 

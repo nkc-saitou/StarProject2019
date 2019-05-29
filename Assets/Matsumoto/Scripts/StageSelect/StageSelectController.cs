@@ -20,6 +20,8 @@ public class StageSelectController : MonoBehaviour {
 	public Transform PlayerModel;
 
 	public float MoveSpeed;
+	public float CursorWait = 1.0f;
+	public float Dead = 0.3f;
 
 	private StageNode _currentSelectedStage;
 	private StageNode _targetStage;
@@ -27,6 +29,7 @@ public class StageSelectController : MonoBehaviour {
 	private Transform _playerBody;
 	private float _moveSpeedMag = 1;
 	private List<IStageMoveEvent> _eventList;
+	private bool _isSceneMoving;
 
 	public float Position;
 
@@ -55,8 +58,9 @@ public class StageSelectController : MonoBehaviour {
 		GameData.Instance.GetData(StageProgressKey, ref clearedStages);
 
 		var stageProgress = clearedStages.Count;
+		var followerCount = 0;
 		// ステージノードのセットアップ(+1はタイトル分)
-		FirstNode.SetUpNode(null, stageProgress + 1);
+		FirstNode.SetUpNode(null, stageProgress + 1, ref followerCount);
 
 		if(_isFirstLoaded) {
 			_isFirstLoaded = false;
@@ -65,6 +69,7 @@ public class StageSelectController : MonoBehaviour {
 		else {
 			// 進めたステージまで移動
 			_currentSelectedStage = _targetStage = GetStageNode(stageProgress);
+			if(_currentSelectedStage != FirstNode) State = StageSelectState.Select;
 		}
 
 		_playerPositionTarget = GetLength(_targetStage);
@@ -82,7 +87,10 @@ public class StageSelectController : MonoBehaviour {
 		Position = _playerPositionTarget;
 
 		// BGMを鳴らす
-		AudioManager.FadeIn(1.0f, "distantfuture");
+		AudioManager.FadeIn(1.0f, "vigilante");
+
+		// ステージ選択用
+		StartCoroutine(SelectionInput());
 	}
 	
 	// Update is called once per frame
@@ -90,15 +98,7 @@ public class StageSelectController : MonoBehaviour {
 
 		if(IsFreeze) return;
 
-		if(Input.GetKeyDown(KeyCode.A)) {
-			var prev = _targetStage.PrevStage;
-			if(prev) SetTarget(prev);
-		}
-		if(Input.GetKeyDown(KeyCode.D)) {
-			var next = _targetStage.NextStage;
-			if(next && _targetStage.IsCleared) SetTarget(next);
-		}
-		if(Input.GetKeyDown(KeyCode.F)) {
+		if(Input.GetButtonDown("Attack")) {
 			if(_targetStage != FirstNode && State != StageSelectState.Title)
 
 				MoveScene();
@@ -133,6 +133,9 @@ public class StageSelectController : MonoBehaviour {
 
 	private void MoveScene() {
 		if(!_currentSelectedStage) return;
+		if(_isSceneMoving) return;
+		_isSceneMoving = true;
+
 		Debug.Log("MoveScene");
 
 		// ステージ用BGM
@@ -233,5 +236,34 @@ public class StageSelectController : MonoBehaviour {
 		}
 		return pos;
 
+	}
+
+	IEnumerator SelectionInput() {
+
+		var t = 0.0f;
+
+		while(true) {
+
+			t = Mathf.MoveTowards(t, 0.0f, Time.deltaTime);
+
+			if(Input.GetAxisRaw("Horizontal") < -Dead && t <= 0.0f) {
+				t = CursorWait;
+				var prev = _targetStage.PrevStage;
+				if (prev) {
+					AudioManager.PlaySE("MenuSelect", position: prev.transform.position);
+					SetTarget(prev);
+				}
+			}
+			if(Input.GetAxisRaw("Horizontal") > Dead && t >= 0.0f) {
+				t = -CursorWait;
+				var next = _targetStage.NextStage;
+				if (next && _targetStage.IsCleared) {
+					AudioManager.PlaySE("MenuSelect", position: next.transform.position);
+					SetTarget(next);
+				}
+			}
+
+			yield return null;
+		}
 	}
 }

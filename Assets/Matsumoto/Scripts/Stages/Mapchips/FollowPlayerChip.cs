@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Matsumoto.Audio;
 using UnityEngine;
 using Matsumoto.Character;
 using UnityEngine.Experimental.U2D.Animation;
@@ -8,6 +9,8 @@ namespace Matsumoto.Gimmick {
 	public class FollowPlayerChip : GimmickChip {
 
 		public PlayerFollower PlayerFollowerPrefab;
+		public GameObject GetFollowerEffectPrefab;
+
 		public int FollowerIndex;
 		public float Amplitude = 0.1f;
 		public float Speed = 2.0f;
@@ -19,9 +22,6 @@ namespace Matsumoto.Gimmick {
 		public override void GimmickStart() {
 			base.GimmickStart();
 
-			_randomTime = Random.Range(0, 1);
-			_startY = transform.position.y;
-
 			if(Controller.FollowerData.FindedIndexList
 				.Exists(x => x == FollowerIndex)) {
 				Destroy(gameObject);
@@ -29,6 +29,9 @@ namespace Matsumoto.Gimmick {
 		}
 
 		private void Start() {
+			_randomTime = Random.Range(0, 1);
+			_startY = transform.position.y;
+
 			GetComponentInChildren<SpriteSkin>().enabled = true;
 		}
 
@@ -49,6 +52,10 @@ namespace Matsumoto.Gimmick {
 				Controller.FollowerData.FindedIndexList
 					.Add(FollowerIndex);
 
+				AudioManager.PlaySE("GetFollower", position: transform.position);
+
+				var g = Instantiate(GetFollowerEffectPrefab, transform.position, transform.rotation);;
+				Destroy(g, 5.0f);
 				Destroy(gameObject);
 			}
 		}

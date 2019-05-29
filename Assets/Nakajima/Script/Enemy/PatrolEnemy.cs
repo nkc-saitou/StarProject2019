@@ -4,6 +4,12 @@ using UnityEngine;
 
 public class PatrolEnemy : EnemyBase, IEnemy
 {
+    // EnemyのRenderer
+    [SerializeField]
+    private SpriteRenderer mySprite;
+    // カメラに範囲に存在するか
+    private bool visible;
+
     // 現在の位置
     private Vector2 currentPos;
     // 自分が目指す位置
@@ -40,7 +46,7 @@ public class PatrolEnemy : EnemyBase, IEnemy
     {
         lineRen = GetComponent<LineRenderer>();
         lineRen.enabled = false;
-        target = GameObject.Find("Player");
+        target = FindObjectOfType<Matsumoto.Character.Player>().gameObject;
         currentPos = transform.position;
         originPos = transform.position;
         goalPos = originPos + moveValue;
@@ -50,6 +56,10 @@ public class PatrolEnemy : EnemyBase, IEnemy
 	
 	// Update is called once per frame
 	void Update () {
+        // カメラに写っているか判定
+        if (mySprite.isVisible) visible = true;
+        else visible = false;
+
         CheckAction();
 
         Move();
@@ -81,7 +91,7 @@ public class PatrolEnemy : EnemyBase, IEnemy
     /// </summary>
     protected override void CheckAction()
     {
-        // ターゲットがいないならリターン
+        // ターゲットがいない、アクション不可能、カメラ範囲外ならリターン
         if (target == null || canAction == false) return;
 
         // プレイヤーとの距離を検出
@@ -90,7 +100,7 @@ public class PatrolEnemy : EnemyBase, IEnemy
         // Y軸方向の距離取得
         float offsetY = CheckDistanceY(target.transform.position);
         // ターゲットが上にいる場合はリターン
-        if (offsetY >= 0.0f) return;
+        if (offsetY >= 0) return;
 
         // アクション範囲にいるなら
         if (playerDis <= actionRange) Action();
@@ -107,7 +117,7 @@ public class PatrolEnemy : EnemyBase, IEnemy
         int groundLayer = LayerMask.GetMask("Player", "PlayerFollower", "Ignore Raycast");
 
         // LineRendererをアクティブにする
-        if (lineRen.enabled == false) {
+        if (lineRen.enabled == false && visible == true) {
             SetLineRenderer(lineRen.enabled);
             StartCoroutine(IntervalAction(2.0f));
         }
@@ -142,12 +152,14 @@ public class PatrolEnemy : EnemyBase, IEnemy
     {
         yield return new WaitForSeconds(_interval);
 
+        // 次のアクションまでのインターバルを設ける
         if (canAction == true) {
             canAction = false;
             StartCoroutine(IntervalAction(1.0f));
         }
         else canAction = true;
 
+        // 描画されているLineRendererを非表示に変更
         if (lineRen.enabled == true) SetLineRenderer(lineRen.enabled);
     }
 
@@ -178,9 +190,11 @@ public class PatrolEnemy : EnemyBase, IEnemy
     /// <param name="col">当たったコリジョン</param>
     void OnCollisionEnter2D(Collision2D col)
     {
+        // Playerの取得
         var player = col.gameObject.GetComponent<Matsumoto.Character.Player>();
         if (player == null) return;
 
+        // ダメージを与える
         player.ApplyDamage(gameObject, DamageType.Enemy);
     }
 

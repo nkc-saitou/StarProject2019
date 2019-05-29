@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using Matsumoto.Audio;
 using UnityEngine.Experimental.U2D.Animation;
 
 namespace Matsumoto.Character {
@@ -86,6 +87,7 @@ namespace Matsumoto.Character {
 			set {
 				_isFreeze = value;
 				PlayerRig.simulated = !value;
+
 			}
 		}
 
@@ -190,8 +192,21 @@ namespace Matsumoto.Character {
 				_canDash = false;
 			}
 
+			MorphUpdate(Input.GetButton("Morph"));
+
+			if(Input.GetKeyDown(KeyCode.P)) {
+				ApplyDamage(gameObject, DamageType.Enemy);
+			}
+
+			// エフェクト操作
+			var main = AttackEffect.main;
+			main.startRotation = new ParticleSystem.MinMaxCurve(_body.transform.eulerAngles.z);
+		}
+
+		private void MorphUpdate(bool isMorph) {
+
 			var morph = _morph;
-			morph += (Input.GetButton("Morph") ? 1 : -1) * Time.deltaTime * MorphSpeed;
+			morph += (isMorph ? 1 : -1) * Time.deltaTime * MorphSpeed;
 			morph = Mathf.Clamp(morph, 0, 1);
 			if(morph != _morph) {
 
@@ -215,14 +230,6 @@ namespace Matsumoto.Character {
 				else if(morph == 1) ChangeState(PlayerState.Circle);
 				else ChangeState(PlayerState.Morphing);
 			}
-
-			if(Input.GetKeyDown(KeyCode.P)) {
-				ApplyDamage(gameObject, DamageType.Enemy);
-			}
-
-			// エフェクト操作
-			var main = AttackEffect.main;
-			main.startRotation = new ParticleSystem.MinMaxCurve(_body.transform.eulerAngles.z);
 		}
 
 		private bool CheckCanAttack() {
@@ -237,8 +244,11 @@ namespace Matsumoto.Character {
 
 		private void FixedUpdate() {
 
-			Move();
+			if (IsFreeze) return;
 
+			var input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+
+			Move(input);
 			AnimationUpdate();
 		}
 
@@ -279,12 +289,7 @@ namespace Matsumoto.Character {
 
 		}
 
-		private void Move() {
-
-			if(IsFreeze) return;
-
-			// calc speed
-			var input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+		private void Move(Vector2 input) {
 
 			var addSpeed = 0.0f;
 			if(_gravityDirection == Angle.Down)
@@ -361,7 +366,6 @@ namespace Matsumoto.Character {
 
 			var speed = RollSpeed / 2;
 			if(IsRotate) speed = 0;
-			if(IsFreeze) speed = 0;
 
 			_animator.SetFloat("Speed", speed);
 		}
@@ -484,6 +488,8 @@ namespace Matsumoto.Character {
 			PlayerRig.AddForce(input * _currentStatus.DashPower);
 			_isDash = true;
 
+			AudioManager.PlaySE("Dash", position:transform.position);
+
 			// 攻撃判定
 			this.StartPausableCoroutine(AttackCollision());
 		}
@@ -557,7 +563,36 @@ namespace Matsumoto.Character {
 			AnimationUpdate();
 		}
 
+		/// <summary>
+		/// 操作をやめる
+		/// </summary>
+		public void Stop() {
+			IsFreeze = true;
+			PlayerRig.simulated = true;
+			PlayerRig.velocity = new Vector2(0, -Mathf.Abs(PlayerRig.velocity.y));
+			RollSpeed = 0;
+			AnimationUpdate();
+			StartCoroutine(MorphAnimation(PlayerState.Star, MorphSpeed));
+		}
+
+		public IEnumerator MoveTo(Vector2 relationalPositon, float speed = 1.0f, float eps = 0.5f) {
+
+			var endPos = (Vector2)transform.position + relationalPositon;
+			Debug.Log(endPos);
+			var diff = endPos - (Vector2)transform.position;
+			while (diff.sqrMagnitude > eps * eps) {
+				var input = diff.normalized;
+				Move(input);
+				AnimationUpdate();
+				yield return null;
+				diff = endPos - (Vector2)transform.position;
+			}
+
+		}
+
 		private void OnTriggerEnter2D(Collider2D collision) {
+
+			if(!IsAttacking) return;
 
 			var enemy = collision.gameObject.GetComponent<IEnemy>();
 			if(enemy == null) return;
@@ -570,6 +605,8 @@ namespace Matsumoto.Character {
 			// 敵にあたったら回復
 			_canDash = true;
 			_attackWait = 0;
+
+			AudioManager.PlaySE("AttackHit_3", position: transform.position);
 
 			StartCoroutine(HitStop(0.1f));
 		}
@@ -589,6 +626,8 @@ namespace Matsumoto.Character {
 			IsRenderer = false;
 			var p = Instantiate(DeathEffectPrefab, transform.position, transform.rotation);
 			Destroy(p, 5.0f);
+
+			AudioManager.PlaySE("Death", position: transform.position);
 
 			_stageController.GameOver();
 

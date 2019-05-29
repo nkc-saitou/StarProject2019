@@ -7,6 +7,7 @@ using System;
 using UnityEngine.SceneManagement;
 using Matsumoto.Gimmick;
 using Matsumoto.Audio;
+using Matsumoto.Character;
 
 public enum GameState {
 	StartUp,
@@ -17,12 +18,17 @@ public enum GameState {
 
 public class StageController : MonoBehaviour {
 
+	public const string StageFollowerDataTarget = "_FollowerData";
+
 	public event Action<StageController> OnGameStart;
 	public event Action<StageController> OnGameClear;
 	public event Action<StageController> OnGameOver;
 
+	public PauseMenu PauseMenuCamvas;
+
 	public bool IsCreateStage = true;
 	public bool IsReturnToSelect = true;
+	public bool CanPause = false;
 
 	public string StagePath = "TestStage";
 	private string _followerDataKey;
@@ -45,7 +51,7 @@ public class StageController : MonoBehaviour {
 		CreateStage(StagePath);
 
 		// フォロワーのデータ取得
-		_followerDataKey = StagePath + "_FollowerData";
+		_followerDataKey = StagePath + StageFollowerDataTarget;
 		GameData.Instance.GetData(_followerDataKey, ref _followerData);
 
 		// ステージにないデータを削除
@@ -63,6 +69,10 @@ public class StageController : MonoBehaviour {
 			item.Controller = this;
 			item.GimmickStart();
 		}
+
+		PauseMenuCamvas.SetStageController(this);
+		PauseMenuCamvas.gameObject.SetActive(false);
+
 	}
 
 	// Use this for initialization
@@ -77,15 +87,9 @@ public class StageController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if(Input.GetKeyDown(KeyCode.Escape))
+		if (Input.GetKeyDown(KeyCode.Escape) && CanPause) {
 			PauseSystem.Instance.IsPause = !PauseSystem.Instance.IsPause;
-
-		if(State == GameState.GameOver) {
-			//リトライ
-			if(Input.GetButtonDown("Attack")) {
-                var sceneName = SceneManager.GetActiveScene().name;
-                SceneChanger.Instance.MoveScene(sceneName, 0.2f, 0.2f, SceneChangeType.BlackFade);
-			}
+			PauseMenuCamvas.gameObject.SetActive(!PauseMenuCamvas.gameObject.activeSelf);
 		}
 
 	}
@@ -103,6 +107,8 @@ public class StageController : MonoBehaviour {
 		State = GameState.Playing;
 
 		OnGameStart?.Invoke(this);
+
+		CanPause = true;
 	}
 
 	public void GameClear() {
@@ -121,23 +127,34 @@ public class StageController : MonoBehaviour {
 		GameData.Instance.Save();
 
 		OnGameClear?.Invoke(this);
+		CanPause = false;
 
 		if(IsReturnToSelect) {
-			AudioManager.FadeOut(1.0f);
-			SceneChanger.Instance.MoveScene("StageSelect", 1.0f, 1.0f, SceneChangeType.WhiteFade);
+			var player = FindObjectOfType<Player>();
+			AudioManager.FadeOut(2.0f);
+			AudioManager.PlaySE("GameClear", position: player.transform.position);
+			SceneChanger.Instance.MoveScene("StageSelect", 2.0f, 1.0f, SceneChangeType.WhiteFade);
 		}
 	}
 
 	public void GameOver() {
 
 		Debug.Log("GameOver!");
+		State = GameState.GameOver;
+
 		OnGameOver?.Invoke(this);
+		CanPause = false;
 
 		StartCoroutine(GameOverWait());
 	}
 
 	IEnumerator GameOverWait() {
 		yield return new WaitForSeconds(1);
-		State = GameState.GameOver;
+
+		// BGMを止める
+		AudioManager.FadeOut(0.2f);
+
+		var sceneName = SceneManager.GetActiveScene().name;
+		SceneChanger.Instance.MoveScene(sceneName, 0.2f, 0.2f, SceneChangeType.BlackFade);
 	}
 }
