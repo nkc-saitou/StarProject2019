@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Matsumoto.Audio;
 using UnityEngine;
 using Matsumoto.Character;
 using UnityEngine.Experimental.U2D.Animation;
@@ -48,6 +49,8 @@ namespace Matsumoto.Gimmick {
 
 				Controller.FollowerData.FindedIndexList
 					.Add(FollowerIndex);
+
+				AudioManager.PlaySE("GetFollower", position: transform.position);
 
 				Destroy(gameObject);
 			}

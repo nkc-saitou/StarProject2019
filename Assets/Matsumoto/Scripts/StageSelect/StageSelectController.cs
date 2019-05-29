@@ -249,12 +249,18 @@ public class StageSelectController : MonoBehaviour {
 			if(Input.GetAxisRaw("Horizontal") < -Dead && t <= 0.0f) {
 				t = CursorWait;
 				var prev = _targetStage.PrevStage;
-				if(prev) SetTarget(prev);
+				if (prev) {
+					AudioManager.PlaySE("MenuSelect", position: prev.transform.position);
+					SetTarget(prev);
+				}
 			}
 			if(Input.GetAxisRaw("Horizontal") > Dead && t >= 0.0f) {
 				t = -CursorWait;
 				var next = _targetStage.NextStage;
-				if(next && _targetStage.IsCleared) SetTarget(next);
+				if (next && _targetStage.IsCleared) {
+					AudioManager.PlaySE("MenuSelect", position: next.transform.position);
+					SetTarget(next);
+				}
 			}
 
 			yield return null;

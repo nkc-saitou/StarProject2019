@@ -7,6 +7,7 @@ using System;
 using UnityEngine.SceneManagement;
 using Matsumoto.Gimmick;
 using Matsumoto.Audio;
+using Matsumoto.Character;
 
 public enum GameState {
 	StartUp,
@@ -129,8 +130,10 @@ public class StageController : MonoBehaviour {
 		CanPause = false;
 
 		if(IsReturnToSelect) {
-			AudioManager.FadeOut(1.0f);
-			SceneChanger.Instance.MoveScene("StageSelect", 1.0f, 1.0f, SceneChangeType.WhiteFade);
+			var player = FindObjectOfType<Player>();
+			AudioManager.FadeOut(2.0f);
+			AudioManager.PlaySE("GameClear", position: player.transform.position);
+			SceneChanger.Instance.MoveScene("StageSelect", 2.0f, 1.0f, SceneChangeType.WhiteFade);
 		}
 	}
 
