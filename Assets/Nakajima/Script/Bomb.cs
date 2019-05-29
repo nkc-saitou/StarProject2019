@@ -4,13 +4,25 @@ using UnityEngine;
 
 public class Bomb : MonoBehaviour
 {
-    // 爆破用エフェクト
+    // ターゲット
+    private GameObject targetObj;
+
+    // 爆破範囲
     [SerializeField]
-    private GameObject bombEffect;
+    private float explosionRange;
 
 	// Use this for initialization
 	void Start () {
-		
+        targetObj = FindObjectOfType<Matsumoto.Character.Player>().gameObject;
+
+        float distance =  CheckDistance(targetObj.transform.position);
+
+        if(distance <= explosionRange) {
+            var player = targetObj.GetComponent<Matsumoto.Character.Player>();
+            if (player == null) return;
+
+            player.ApplyDamage(gameObject, DamageType.Enemy);
+        }
 	}
 	
 	// Update is called once per frame
@@ -19,20 +31,16 @@ public class Bomb : MonoBehaviour
 	}
 
     /// <summary>
-    /// 当たり判定
+    /// 目標との距離を返す
     /// </summary>
-    /// <param name="col">当たったコリジョン</param>
-    void OnCollisionEnter2D(Collision2D col)
+    /// <param name="_targetPos">目標地点の座標</param>
+    /// <returns></returns>
+    private float CheckDistance(Vector2 _targetPos)
     {
-        Instantiate(bombEffect, transform.position, transform.rotation);
+        // 目標座標との距離の検出
+        float _distance = Vector2.Distance(_targetPos, transform.position);
 
-        // Playerの取得
-        var player = col.gameObject.GetComponent<Matsumoto.Character.Player>();
-        if (player != null) {
-            // プレイヤーにダメージを与える
-            player.ApplyDamage(gameObject, DamageType.Gimmick);
-        }
-
-        Destroy(gameObject);
+        // 距離を返す
+        return _distance;
     }
 }

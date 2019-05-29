@@ -64,13 +64,10 @@ public class HidingEnemy : EnemyBase, IEnemy
     IEnumerator ExplosionLight()
     {
         time = 0.0f;
-
-        // RendererのColorを取得
-        //var color = myMaterial.SetVector("FuildColor", new Vector4(0.0f, 0.0f, 0.0f, 0.0f));
-        // アルファフェードインアウト
+        
         while (time < 0.5f) {
             time += Time.deltaTime;
-            myMaterial.SetVector("_FluidColor", new Vector4(Mathf.Lerp(myMaterial.GetVector("_FluidColor").x, 0.0f, time * 100.0f * Time.deltaTime), 0.0f, 0.0f, 0.0f));
+            myMaterial.SetVector("_FluidColor", new Vector4(Mathf.Lerp(myMaterial.GetVector("_FluidColor").x, 0.0f, time * 20.0f * Time.deltaTime), 0.0f, 0.0f, 0.0f));
             yield return null;
         }
 
@@ -78,7 +75,7 @@ public class HidingEnemy : EnemyBase, IEnemy
 
         while (time < 0.5f) {
             time += Time.deltaTime;
-            myMaterial.SetVector("_FluidColor", new Vector4(Mathf.Lerp(myMaterial.GetVector("_FluidColor").x, 1.0f, time * 100.0f * Time.deltaTime), 0.0f, 0.0f, 0.0f));
+            myMaterial.SetVector("_FluidColor", new Vector4(Mathf.Lerp(myMaterial.GetVector("_FluidColor").x, 1.0f, time * 20.0f * Time.deltaTime), 0.0f, 0.0f, 0.0f));
             yield return null;
         }
 
