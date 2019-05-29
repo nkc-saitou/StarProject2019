@@ -37,8 +37,9 @@ public class PauseMenu : MonoBehaviour
     private float axisTime; 
     
 	void Start () {
-
-	}
+        var SoundPos = FindObjectOfType<Matsumoto.Character.Player>().transform.position;
+        Matsumoto.Audio.AudioManager.PlaySE("OpenMenu", position: SoundPos);
+    }
 	
 	void Update () {
         MenuSelect();
@@ -177,6 +178,9 @@ public class PauseMenu : MonoBehaviour
     {
         // シーン遷移中はポーズ不可
         stageCon.CanPause = false;
+
+        var SoundPos = FindObjectOfType<Matsumoto.Character.Player>().transform.position;
+        Matsumoto.Audio.AudioManager.PlaySE("MenuSelect_3", position: SoundPos);
 
         // ステートごとにシーン遷移
         switch (_currentState)
