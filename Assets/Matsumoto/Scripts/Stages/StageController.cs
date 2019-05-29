@@ -21,8 +21,11 @@ public class StageController : MonoBehaviour {
 	public event Action<StageController> OnGameClear;
 	public event Action<StageController> OnGameOver;
 
+	public GameObject PauseCamvas;
+
 	public bool IsCreateStage = true;
 	public bool IsReturnToSelect = true;
+	public bool CanPause = false;
 
 	public string StagePath = "TestStage";
 	private string _followerDataKey;
@@ -63,6 +66,9 @@ public class StageController : MonoBehaviour {
 			item.Controller = this;
 			item.GimmickStart();
 		}
+
+		PauseCamvas.SetActive(false);
+
 	}
 
 	// Use this for initialization
@@ -77,8 +83,10 @@ public class StageController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if(Input.GetKeyDown(KeyCode.Escape))
+		if (Input.GetKeyDown(KeyCode.Escape) && CanPause) {
 			PauseSystem.Instance.IsPause = !PauseSystem.Instance.IsPause;
+			PauseCamvas.SetActive(!PauseCamvas.activeSelf);
+		}
 
 	}
 
@@ -95,6 +103,8 @@ public class StageController : MonoBehaviour {
 		State = GameState.Playing;
 
 		OnGameStart?.Invoke(this);
+
+		CanPause = true;
 	}
 
 	public void GameClear() {
@@ -113,6 +123,7 @@ public class StageController : MonoBehaviour {
 		GameData.Instance.Save();
 
 		OnGameClear?.Invoke(this);
+		CanPause = false;
 
 		if(IsReturnToSelect) {
 			AudioManager.FadeOut(1.0f);
@@ -126,6 +137,7 @@ public class StageController : MonoBehaviour {
 		State = GameState.GameOver;
 
 		OnGameOver?.Invoke(this);
+		CanPause = false;
 
 		StartCoroutine(GameOverWait());
 	}
