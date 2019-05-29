@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using Matsumoto.Audio;
 using UnityEngine.Experimental.U2D.Animation;
 
 namespace Matsumoto.Character {
@@ -487,6 +488,8 @@ namespace Matsumoto.Character {
 			PlayerRig.AddForce(input * _currentStatus.DashPower);
 			_isDash = true;
 
+			AudioManager.PlaySE("Dash", position:transform.position);
+
 			// 攻撃判定
 			this.StartPausableCoroutine(AttackCollision());
 		}
@@ -603,6 +606,8 @@ namespace Matsumoto.Character {
 			_canDash = true;
 			_attackWait = 0;
 
+			AudioManager.PlaySE("AttackHit_3", position: transform.position);
+
 			StartCoroutine(HitStop(0.1f));
 		}
 
@@ -621,6 +626,8 @@ namespace Matsumoto.Character {
 			IsRenderer = false;
 			var p = Instantiate(DeathEffectPrefab, transform.position, transform.rotation);
 			Destroy(p, 5.0f);
+
+			AudioManager.PlaySE("Death", position: transform.position);
 
 			_stageController.GameOver();
 
