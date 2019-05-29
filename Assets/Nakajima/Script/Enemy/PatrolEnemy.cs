@@ -118,6 +118,10 @@ public class PatrolEnemy : EnemyBase, IEnemy
 
         // LineRendererをアクティブにする
         if (lineRen.enabled == false && visible == true) {
+            // 音のなる位置を定義
+            var SoundPos = new Vector3(transform.position.x, target.transform.position.y, 0.0f);
+            Matsumoto.Audio.AudioManager.PlaySE("Laser", position:SoundPos);
+
             SetLineRenderer(lineRen.enabled);
             StartCoroutine(IntervalAction(2.0f));
         }
@@ -135,12 +139,16 @@ public class PatrolEnemy : EnemyBase, IEnemy
         lineRen.startWidth = 0.1f;
         lineRen.endWidth = 0.1f;
 
-        // プレイヤー判定
-        RaycastHit2D playerHit = Physics2D.Raycast(transform.position, -transform.up, 500.0f, playerLayer);
-        if(playerHit.collider != null) {
-            var player = playerHit.collider.gameObject.GetComponent<Matsumoto.Character.Player>();
-            if (player != null) player.ApplyDamage(gameObject, DamageType.Enemy);
+        if (lineRen.enabled == true) {
+            // プレイヤー判定
+            RaycastHit2D playerHit = Physics2D.Raycast(transform.position, -transform.up, 500.0f, playerLayer);
+            if (playerHit.collider != null)
+            {
+                var player = playerHit.collider.gameObject.GetComponent<Matsumoto.Character.Player>();
+                if (player != null) player.ApplyDamage(gameObject, DamageType.Enemy);
+            }
         }
+        
     }
 
     /// <summary>
