@@ -9,6 +9,8 @@ namespace Matsumoto.Gimmick {
 	public class FollowPlayerChip : GimmickChip {
 
 		public PlayerFollower PlayerFollowerPrefab;
+		public GameObject GetFollowerEffectPrefab;
+
 		public int FollowerIndex;
 		public float Amplitude = 0.1f;
 		public float Speed = 2.0f;
@@ -52,6 +54,8 @@ namespace Matsumoto.Gimmick {
 
 				AudioManager.PlaySE("GetFollower", position: transform.position);
 
+				var g = Instantiate(GetFollowerEffectPrefab, transform.position, transform.rotation);;
+				Destroy(g, 5.0f);
 				Destroy(gameObject);
 			}
 		}
