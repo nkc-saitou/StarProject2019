@@ -34,6 +34,7 @@ namespace Matsumoto.Character {
 		public float AttackHitTime = 0.2f;
 		public float AttackWaitTime = 0.3f; // AttackHitTimeより大きくないと判定がアレ
 		public float JumpWaitTime = 0.2f;
+		public bool DashIsAttack = true;
 
 		public Collider2D AttackCollider;
 		public DynamicBone PlayerModel;
@@ -51,8 +52,7 @@ namespace Matsumoto.Character {
 		private Material _bodyMaterial;
 		private Renderer[] _playerRenderers;
 
-		private bool _isDash = false;
-		private bool _canDash = true;
+		private bool _canAttack = true;
 		private bool _isGround = false;
 		private PlayerStatus _currentStatus;
 
@@ -60,7 +60,11 @@ namespace Matsumoto.Character {
 		private byte _ground = 0;
 		private float _morph = 0;
 		private float _attackWait = 0;
+		private float _lastAttackedTime = 0;
 		private float _jumpWait = 0;
+
+		public event Action<PlayerState, PlayerState> OnStateChanged;
+		public event Action<bool> OnIsDashChanged;
 
 		public float RollSpeed {
 			get; private set;
@@ -109,11 +113,20 @@ namespace Matsumoto.Character {
 			get; set;
 		}
 
+		private bool _isDash;
+		public bool IsDash {
+			get { return _isDash; }
+			set {
+				if (_isDash == value) return;
+				OnIsDashChanged(_isDash = value);
+			}
+		}
+
+
 		public bool IsAttacking {
 			get; private set;
 		}
 
-		public event Action<PlayerState, PlayerState> OnChangeState;
 
 		private void Awake() {
 
@@ -161,7 +174,7 @@ namespace Matsumoto.Character {
 
 			AttackEffect.Stop();
 
-			OnChangeState += (oldState, newState) => {
+			OnStateChanged += (oldState, newState) => {
 
 				switch(newState) {
 					case PlayerState.Star:
@@ -178,6 +191,12 @@ namespace Matsumoto.Character {
 				}
 			};
 
+			OnIsDashChanged += e => {
+				if (!DashIsAttack) return;
+				Debug.Log("Toggled " + e);
+				ToggleAttackState(e);
+			};
+
 			ChangeState(PlayerState.Star, true);
 			Morph(0);
 
@@ -191,13 +210,9 @@ namespace Matsumoto.Character {
 			if(IsFreeze) return;
 
 			CheckBlockSide();
-			if(_isGround) _canDash = true;
+			if(_isGround) _canAttack = true;
 
-			if(CheckCanAttack() && Input.GetButtonDown("Attack")) {
-				Attack();
-				_attackWait = AttackWaitTime;
-				_canDash = false;
-			}
+			AttackUpdate();
 
 			MorphUpdate(Input.GetButton("Morph"));
 
@@ -222,7 +237,6 @@ namespace Matsumoto.Character {
 					_jumpWait = JumpWaitTime;
 					PlayerRig.AddForce(ToVector(_gravityDirection) * -MaxChargePower);
 
-					Debug.Log(_gravityDirection);
 					var g = Instantiate(JumpEffectPrefab, transform);
 					g.transform.SetParent(null);
 					Destroy(g.gameObject, 5);
@@ -241,10 +255,7 @@ namespace Matsumoto.Character {
 
 		private bool CheckCanAttack() {
 			if(State != PlayerState.Star) return false;
-			if(!_canDash) return false;
-
-			_attackWait -= Time.deltaTime;
-			_attackWait = Mathf.Max(_attackWait, 0);
+			if(!_canAttack) return false;
 
 			return _attackWait == 0;
 		}
@@ -312,10 +323,10 @@ namespace Matsumoto.Character {
 			else RollSpeed = Mathf.MoveTowards(RollSpeed, 0, _currentStatus.MaxSubSpeed);
 
 			if(Mathf.Abs(RollSpeed) < _currentStatus.MaxSpeed) {
-				_isDash = false;
+				IsDash = false;
 			}
 
-			var maxSpeed = _isDash ? _currentStatus.MaxDashSpeed : _currentStatus.MaxSpeed;
+			var maxSpeed = IsDash ? _currentStatus.MaxDashSpeed : _currentStatus.MaxSpeed;
 
 			// 最大速度を制限
 			RollSpeed = Mathf.Clamp(RollSpeed, -maxSpeed, maxSpeed);
@@ -483,7 +494,32 @@ namespace Matsumoto.Character {
 			ChangeState(toMorph);
 		}
 
-		private void Attack() {
+		private void AttackUpdate() {
+
+			// 情報の更新
+			_attackWait -= Time.deltaTime;
+			_attackWait = Mathf.Max(_attackWait, 0);
+
+			// 攻撃をやめるか判定
+			if (DashIsAttack) {
+
+			}
+			else {
+				if(_lastAttackedTime + AttackHitTime > Time.time && IsAttacking)
+					ToggleAttackState(false);
+			}
+
+
+			// 入力
+			if(CheckCanAttack() && Input.GetButtonDown("Attack")) {
+				DoAttack();
+				_attackWait = AttackWaitTime;
+				_canAttack = false;
+			}
+
+		}
+
+		private void DoAttack() {
 
 			var input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")).normalized;
 
@@ -497,28 +533,31 @@ namespace Matsumoto.Character {
 			if(_gravityDirection == Angle.Up) RollSpeed *= -1;
 
 			PlayerRig.AddForce(input * _currentStatus.DashPower);
-			_isDash = true;
+			IsDash = true;
 
 			AudioManager.PlaySE("Dash", position:transform.position);
 
 			// 攻撃判定
-			this.StartPausableCoroutine(AttackCollision());
+			_lastAttackedTime = Time.time;
+			ToggleAttackState(true);
 		}
 
 		private void ChangeState(PlayerState state, bool isForce = false) {
 
 			if(state == State && !isForce) return;
-			OnChangeState(State, state);
+			OnStateChanged(State, state);
 			State = state;
 
 		}
 
-		private IEnumerator AttackCollision() {
-			AttackCollider.enabled = IsAttacking = true;
-			AttackEffect.Play();
-			yield return new WaitForSeconds(AttackHitTime);
-			AttackCollider.enabled = IsAttacking = false;
-			AttackEffect.Stop();
+		private void ToggleAttackState(bool enable) {
+			AttackCollider.enabled = IsAttacking = enable;
+			if (enable) {
+				AttackEffect.Play();
+			}
+			else {
+				AttackEffect.Stop();
+			}
 		}
 
 		private float SpeedConvert(float speed, Angle from, Angle to) {
@@ -614,7 +653,7 @@ namespace Matsumoto.Character {
 			enemy.ApplyDamage();
 
 			// 敵にあたったら回復
-			_canDash = true;
+			_canAttack = true;
 			_attackWait = 0;
 
 			AudioManager.PlaySE("AttackHit_3", position: transform.position);
