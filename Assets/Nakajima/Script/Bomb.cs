@@ -13,6 +13,8 @@ public class Bomb : MonoBehaviour
 
 	// Use this for initialization
 	void Start () {
+        Matsumoto.Audio.AudioManager.PlaySE("Explosion", position: transform.position);
+
         // ターゲットの設定
         targetObj = FindObjectOfType<Matsumoto.Character.Player>().gameObject;
         var player = targetObj.GetComponent<Matsumoto.Character.Player>();
