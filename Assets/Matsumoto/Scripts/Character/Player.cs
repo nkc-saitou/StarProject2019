@@ -48,6 +48,7 @@ namespace Matsumoto.Character {
 		private Transform _eye;
 		private SpriteRenderer _body;
 		private SpriteRenderer _bodyWithBone;
+		private Material _bodyMaterial;
 		private Renderer[] _playerRenderers;
 
 		private bool _isDash = false;
@@ -122,8 +123,14 @@ namespace Matsumoto.Character {
 			_animator = GetComponent<Animator>();
 			PlayerRig = GetComponent<Rigidbody2D>();
 			_eye = transform.Find("Eye");
+
 			_body = transform.Find("Body").GetComponent<SpriteRenderer>();
 			_bodyWithBone = _body.transform.Find("StarWithBone").GetComponent<SpriteRenderer>();
+			_bodyMaterial = Instantiate(_body.material);
+			_body.material = _bodyMaterial;
+			_bodyWithBone.material = _bodyMaterial;
+			_bodyMaterial.EnableKeyword("_EMISSION");
+
 			_playerRenderers = GetComponentsInChildren<Renderer>();
 
 			_currentStatus = ScriptableObject.CreateInstance<PlayerStatus>();
@@ -424,6 +431,7 @@ namespace Matsumoto.Character {
 			_currentStatus.Material.friction = Mathf.Lerp(StarStatus.Material.friction, CircleStatus.Material.friction, ratio);
 			_currentStatus.Material.bounciness = Mathf.Lerp(StarStatus.Material.bounciness, CircleStatus.Material.bounciness, ratio);
 
+			_currentStatus.BodyColor = Color.Lerp(StarStatus.BodyColor, CircleStatus.BodyColor, ratio);
 			_currentStatus.MaxSpeed = Mathf.Lerp(StarStatus.MaxSpeed, CircleStatus.MaxSpeed, ratio);
 			_currentStatus.MaxDashSpeed = Mathf.Lerp(StarStatus.MaxDashSpeed, CircleStatus.MaxDashSpeed, ratio);
 			_currentStatus.DashPower = Mathf.Lerp(StarStatus.DashPower, CircleStatus.DashPower, ratio);
@@ -433,6 +441,9 @@ namespace Matsumoto.Character {
 			_currentStatus.AirResistance = Mathf.Lerp(StarStatus.AirResistance, CircleStatus.AirResistance, ratio);
 
 			PlayerRig.sharedMaterial = _currentStatus.Material;
+
+			// Material
+			_bodyMaterial.SetColor("_EmissionColor", _currentStatus.BodyColor);
 
 			// Animation
 			_animator.SetFloat("Morph", ratio);
