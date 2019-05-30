@@ -54,7 +54,7 @@ public class HidingEnemy : EnemyBase, IEnemy
         playerDis = CheckDistance(target.transform.position);
 
         // アクション範囲にいるなら
-        if (playerDis <= actionRange) StartCoroutine(IntervalAction(2.0f));
+        if (playerDis <= actionRange) StartCoroutine(IntervalAction(0.5f));
 
     }
 
@@ -65,17 +65,19 @@ public class HidingEnemy : EnemyBase, IEnemy
     {
         time = 0.0f;
         
-        while (time < 0.5f) {
+        // 赤色に変更
+        while (time < 0.05f) {
             time += Time.deltaTime;
-            myMaterial.SetVector("_FluidColor", new Vector4(Mathf.Lerp(myMaterial.GetVector("_FluidColor").x, 0.0f, time * 20.0f * Time.deltaTime), 0.0f, 0.0f, 0.0f));
+            myMaterial.SetVector("_FluidColor", new Vector4(1.0f, 0.0f, 0.0f, 0.0f));
             yield return null;
         }
 
         time = 0.0f;
 
-        while (time < 0.5f) {
+        // 黒色に変更
+        while (time < 0.05f) {
             time += Time.deltaTime;
-            myMaterial.SetVector("_FluidColor", new Vector4(Mathf.Lerp(myMaterial.GetVector("_FluidColor").x, 1.0f, time * 20.0f * Time.deltaTime), 0.0f, 0.0f, 0.0f));
+            myMaterial.SetVector("_FluidColor", new Vector4(0.0f, 0.0f, 0.0f, 0.0f));
             yield return null;
         }
 
