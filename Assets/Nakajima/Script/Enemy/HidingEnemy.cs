@@ -89,7 +89,9 @@ public class HidingEnemy : EnemyBase, IEnemy
     /// </summary>
     public void Action()
     {
-        Instantiate(bombEffect, transform.position, transform.rotation);
+        // 爆破エフェクトの位置
+        var explosionPos = new Vector3(transform.position.x, transform.position.y, -1.0f);
+        Instantiate(bombEffect, explosionPos, transform.rotation);
 
         Destroy(gameObject);
     }

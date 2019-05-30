@@ -6,6 +6,8 @@ using UnityEngine;
 public class PlayerStatus : ScriptableObject {
 
 	public PhysicsMaterial2D Material;
+	[ColorUsage(false, true)]
+	public Color BodyColor;
 	public float MaxSpeed;
 	public float MaxDashSpeed;
 	public float DashPower;
