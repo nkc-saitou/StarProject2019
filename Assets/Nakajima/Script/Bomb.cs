@@ -13,15 +13,17 @@ public class Bomb : MonoBehaviour
 
 	// Use this for initialization
 	void Start () {
-        targetObj = FindObjectOfType<Matsumoto.Character.Player>().gameObject;
+        Matsumoto.Audio.AudioManager.PlaySE("Explosion", position: transform.position);
 
+        // ターゲットの設定
+        targetObj = FindObjectOfType<Matsumoto.Character.Player>().gameObject;
+        var player = targetObj.GetComponent<Matsumoto.Character.Player>();
+
+        // 距離を測る
         float distance =  CheckDistance(targetObj.transform.position);
 
         if(distance <= explosionRange) {
-            var player = targetObj.GetComponent<Matsumoto.Character.Player>();
-            if (player == null) return;
-
-            player.ApplyDamage(gameObject, DamageType.Enemy);
+            player.ApplyDamage(gameObject, DamageType.Gimmick);
         }
 	}
 	
