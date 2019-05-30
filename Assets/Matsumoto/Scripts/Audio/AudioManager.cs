@@ -10,14 +10,15 @@ namespace Matsumoto.Audio {
 	/// </summary>
 	public sealed class AudioManager : SingletonMonoBehaviour<AudioManager> {
 
-		public const float MaxVolume = 0.0f;						//ミキサーの最大音量
-		public const float MinVolume = -80.0f;						//ミキサーの最小音量
-
 		private const string MixerPath = "Sounds/MainAudioMixer";	//ミキサーのパス
 		private const string BGMPath = "Sounds/BGM/";               //BGMのフォルダーパス
 		private const string SEPath = "Sounds/SE/";                 //SEのフォルダーパス
 
 		private readonly AudioMixerGroup[] _mixerGroups = new AudioMixerGroup[2];//ミキサーのグループ [0]SE [1]BGM
+
+		private float _masterVolumeRatio = 1;
+		private float _SEVolumeRatio = 1;
+		private float _BGMVolumeRatio = 1;
 
 		private AudioSource _SESourcePrefab;
 		private AudioSource _BGMSourcePrefab;
@@ -161,9 +162,7 @@ namespace Matsumoto.Audio {
 		/// </summary>
 		/// <param name="ratio"></param>
 		public static float GetMasterVolume() {
-			float v;
-			Instance.Mixer.GetFloat("MasterVolume", out v);
-			return (v - MinVolume) / (MaxVolume - MinVolume);
+			return Instance._masterVolumeRatio;
 		}
 
 		/// <summary>
@@ -171,7 +170,8 @@ namespace Matsumoto.Audio {
 		/// </summary>
 		/// <param name="ratio"></param>
 		public static void SetMasterVolume(float ratio) {
-			Instance.Mixer.SetFloat("MasterVolume", Mathf.Lerp(MinVolume, MaxVolume, ratio));
+			Instance.Mixer
+				.SetFloat("MasterVolume", Instance._masterVolumeRatio = PowerRatioToDecibels(ratio));
 		}
 
 		/// <summary>
@@ -179,9 +179,7 @@ namespace Matsumoto.Audio {
 		/// </summary>
 		/// <param name="ratio"></param>
 		public static float GetSEVolume() {
-			float v;
-			Instance.Mixer.GetFloat("SEVolume", out v);
-			return (v - MinVolume) / (MaxVolume - MinVolume);
+			return Instance._SEVolumeRatio;
 		}
 
 		/// <summary>
@@ -189,7 +187,8 @@ namespace Matsumoto.Audio {
 		/// </summary>
 		/// <param name="ratio"></param>
 		public static void SetSEVolume(float ratio) {
-			Instance.Mixer.SetFloat("SEVolume", Mathf.Lerp(MinVolume, MaxVolume, ratio));
+			Instance.Mixer
+				.SetFloat("SEVolume", Instance._SEVolumeRatio = PowerRatioToDecibels(ratio));
 		}
 
 		/// <summary>
@@ -197,9 +196,7 @@ namespace Matsumoto.Audio {
 		/// </summary>
 		/// <param name="ratio"></param>
 		public static float GetBGMVolume() {
-			float v;
-			Instance.Mixer.GetFloat("BGMVolume", out v);
-			return (v - MinVolume) / (MaxVolume - MinVolume);
+			return Instance._BGMVolumeRatio;
 		}
 
 		/// <summary>
@@ -207,7 +204,8 @@ namespace Matsumoto.Audio {
 		/// </summary>
 		/// <param name="ratio"></param>
 		public static void SetBGMVolume(float ratio) {
-			Instance.Mixer.SetFloat("BGMVolume", Mathf.Lerp(MinVolume, MaxVolume, ratio));
+			Instance.Mixer
+				.SetFloat("BGMVolume", Instance._BGMVolumeRatio = PowerRatioToDecibels(ratio));
 		}
 
 		/// <summary>
@@ -273,6 +271,11 @@ namespace Matsumoto.Audio {
 				return null;
 			}
 			return Instance._BGMclips[BGMName];
+		}
+
+		private static float PowerRatioToDecibels(float power) {
+			if (power == 0) return -80;
+			return 20 * Mathf.Log10(power);
 		}
 
 		[ContextMenu("DebugShowLoadedSE")]
