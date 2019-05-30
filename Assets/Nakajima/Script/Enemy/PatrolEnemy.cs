@@ -62,6 +62,8 @@ public class PatrolEnemy : EnemyBase, IEnemy
 
         CheckAction();
 
+        if (lineRen.enabled == true) SetLineRendererParam();
+
         Move();
     }
 
@@ -113,8 +115,6 @@ public class PatrolEnemy : EnemyBase, IEnemy
     {
         // プレイヤー判定用レイヤー
         int playerLayer = LayerMask.GetMask("Player", "PlayerFollower");
-        // 地面判定用レイヤー
-        int groundLayer = LayerMask.GetMask("Player", "PlayerFollower", "Ignore Raycast");
 
         // LineRendererをアクティブにする
         if (lineRen.enabled == false && visible == true) {
@@ -125,19 +125,6 @@ public class PatrolEnemy : EnemyBase, IEnemy
             SetLineRenderer(lineRen.enabled);
             StartCoroutine(IntervalAction(2.0f));
         }
-
-        // 地面判定
-        RaycastHit2D groundHit = Physics2D.Raycast(transform.position, -transform.up, 500.0f, ~groundLayer);
-        // 地面の地点取得
-        endPos = groundHit.point;
-        razerHit.transform.position = endPos;
-
-        // Lineの位置を定義
-        lineRen.SetPosition(0, startObj.transform.position);
-        lineRen.SetPosition(1, endPos);
-        // Lineの長さを定義
-        lineRen.startWidth = 0.1f;
-        lineRen.endWidth = 0.1f;
 
         if (lineRen.enabled == true) {
             // プレイヤー判定
@@ -152,6 +139,28 @@ public class PatrolEnemy : EnemyBase, IEnemy
     }
 
     /// <summary>
+    /// LineRendererのパラメーターのセットアップ
+    /// </summary>
+    private void SetLineRendererParam()
+    {
+        // 地面判定用レイヤー
+        int groundLayer = LayerMask.GetMask("Player", "PlayerFollower", "Ignore Raycast");
+
+        // 地面判定
+        RaycastHit2D groundHit = Physics2D.Raycast(transform.position, -transform.up, 500.0f, ~groundLayer);
+        // 地面の地点取得
+        endPos = groundHit.point;
+        razerHit.transform.position = endPos;
+
+        // Lineの位置を定義
+        lineRen.SetPosition(0, startObj.transform.position);
+        lineRen.SetPosition(1, endPos);
+        // Lineの長さを定義
+        lineRen.startWidth = 0.1f;
+        lineRen.endWidth = 0.1f;
+    }
+
+    /// <summary>
     /// アクションのインターバル
     /// </summary>
     /// <param name="_interval">待機時間</param>
@@ -160,15 +169,15 @@ public class PatrolEnemy : EnemyBase, IEnemy
     {
         yield return new WaitForSeconds(_interval);
 
+        // 描画されているLineRendererを非表示に変更
+        if (lineRen.enabled == true) SetLineRenderer(lineRen.enabled);
+
         // 次のアクションまでのインターバルを設ける
         if (canAction == true) {
             canAction = false;
             StartCoroutine(IntervalAction(1.0f));
         }
         else canAction = true;
-
-        // 描画されているLineRendererを非表示に変更
-        if (lineRen.enabled == true) SetLineRenderer(lineRen.enabled);
     }
 
     /// <summary>
