@@ -14,6 +14,7 @@ public class StageNode : MonoBehaviour {
 	private float _freq = 1.0f;
 	private float _amp = 1.0f;
 	private Transform _lab;
+	private SpriteRenderer _labRenderer;
 	private bool _isPlayAnim;
 
 	[SerializeField]
@@ -49,6 +50,8 @@ public class StageNode : MonoBehaviour {
 
 		if(transform.childCount > 0)
 			_lab = transform.GetChild(0);
+
+		_labRenderer = GetComponentInChildren<SpriteRenderer>();
 
 		IsCleared = clearedCount > 0;
 
@@ -88,6 +91,7 @@ public class StageNode : MonoBehaviour {
 
 	private IEnumerator SelectedAnim() {
 		_isPlayAnim = true;
+		_labRenderer.sortingOrder = 100;
 
 		var t = 0.0f;
 
@@ -103,6 +107,7 @@ public class StageNode : MonoBehaviour {
 		}
 		else {
 			_isPlayAnim = false;
+			_labRenderer.sortingOrder = 0;
 		}
 	}
 

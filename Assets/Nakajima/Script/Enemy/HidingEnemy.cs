@@ -8,7 +8,7 @@ using UnityEngine;
 public class HidingEnemy : EnemyBase, IEnemy
 {
     // 自身のSpriteRenderer
-    private SpriteRenderer myRenderer;
+    private Material myMaterial;
 
     // 爆破用エフェクト
     [SerializeField]
@@ -24,7 +24,7 @@ public class HidingEnemy : EnemyBase, IEnemy
     {
         target = GameObject.Find("Player");
         myRig = GetComponent<Rigidbody2D>();
-        myRenderer = GetComponent<SpriteRenderer>();
+        myMaterial = GetComponent<SpriteRenderer>().material;
         canAction = true;
     }
 
@@ -64,24 +64,18 @@ public class HidingEnemy : EnemyBase, IEnemy
     IEnumerator ExplosionLight()
     {
         time = 0.0f;
-
-        // RendererのColorを取得
-        var color = myRenderer.color;
-        // アルファフェードインアウト
+        
         while (time < 0.5f) {
             time += Time.deltaTime;
-            color.a = Mathf.Lerp(myRenderer.color.a, 0.0f, time * 100.0f * Time.deltaTime);
-            myRenderer.color = color;
+            myMaterial.SetVector("_FluidColor", new Vector4(Mathf.Lerp(myMaterial.GetVector("_FluidColor").x, 0.0f, time * 20.0f * Time.deltaTime), 0.0f, 0.0f, 0.0f));
             yield return null;
         }
 
         time = 0.0f;
-        color = myRenderer.color;
 
         while (time < 0.5f) {
             time += Time.deltaTime;
-            color.a = Mathf.Lerp(myRenderer.color.a, 1.0f, time * 100.0f * Time.deltaTime);
-            myRenderer.color = color;
+            myMaterial.SetVector("_FluidColor", new Vector4(Mathf.Lerp(myMaterial.GetVector("_FluidColor").x, 1.0f, time * 20.0f * Time.deltaTime), 0.0f, 0.0f, 0.0f));
             yield return null;
         }
 
