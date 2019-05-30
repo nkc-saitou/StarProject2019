@@ -10,6 +10,7 @@ namespace Matsumoto.Gimmick {
 
 		public PlayerFollower PlayerFollowerPrefab;
 		public GameObject GetFollowerEffectPrefab;
+		public SpriteRenderer BodyRenderer;
 
 		public int FollowerIndex;
 		public float Amplitude = 0.1f;
@@ -29,6 +30,14 @@ namespace Matsumoto.Gimmick {
 		}
 
 		private void Start() {
+
+			// 色を設定
+			var m = BodyRenderer.material;
+			m = Instantiate(m);
+			m.EnableKeyword("_EMISSION");
+			var c = PlayerFollowerPrefab.StarStatus.BodyColor;
+			m.SetColor("_EmissionColor", c);
+
 			_randomTime = Random.Range(0, 1);
 			_startY = transform.position.y;
 

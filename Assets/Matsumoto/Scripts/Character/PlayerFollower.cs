@@ -30,9 +30,10 @@ namespace Matsumoto.Character {
 
 		private Animator _animator;
 		private Rigidbody2D _rigidbody;
-		private SpriteRenderer _body;
 		private Transform _eye;
+		private SpriteRenderer _body;
 		private SpriteRenderer _bodyWithBone;
+		private Material _bodyMaterial;
 
 		private int _detectColliders;
 		private float _speed = 0.0f;
@@ -51,9 +52,13 @@ namespace Matsumoto.Character {
 
 			_animator = GetComponent<Animator>();
 			_rigidbody = GetComponent<Rigidbody2D>();
-			_body = transform.Find("Body").GetComponent<SpriteRenderer>();
 			_eye = transform.Find("Eye");
+			_body = transform.Find("Body").GetComponent<SpriteRenderer>();
 			_bodyWithBone = _body.transform.Find("StarWithBone").GetComponent<SpriteRenderer>();
+			_bodyMaterial = Instantiate(_body.material);
+			_body.material = _bodyMaterial;
+			_bodyWithBone.material = _bodyMaterial;
+			_bodyMaterial.EnableKeyword("_EMISSION");
 
 			ChangeState(FollowerState.Follow);
 
@@ -125,6 +130,11 @@ namespace Matsumoto.Character {
 		}
 
 		private void UpdateAnimation() {
+
+			// Material
+			var c = Color.Lerp(StarStatus.BodyColor, CircleStatus.BodyColor, _morph);
+			_bodyMaterial.SetColor("_EmissionColor", c);
+
 
 			// 描画対象選択
 			var pstar = _morph != 0;

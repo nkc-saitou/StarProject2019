@@ -21,6 +21,9 @@ namespace StarProject2019.Saitou
 
             PosAmount = _maxRotate;
 
+            if (isSide) _maxRotate = transform.GetChild(0).localScale.y - 1;
+            else _maxRotate = transform.GetChild(0).localScale.x - 1;
+
             gear.Permission = GearPermission.All;
         }
 

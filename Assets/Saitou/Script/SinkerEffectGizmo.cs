@@ -18,8 +18,8 @@ namespace StarProject2019.Saitou
 
             Vector3 vec;
 
-            if (sinker.isSide) vec = new Vector3((child.localScale.y * 2) + (sinker._maxRotate - 1), child.localScale.x);
-            else vec = new Vector3(child.localScale.x, (child.localScale.y * 2) + (sinker._maxRotate - 1));
+            if (sinker.isSide) vec = new Vector3((child.localScale.y * 2) + (child.localScale.y - 2), child.localScale.x);
+            else vec = new Vector3(child.localScale.x, (child.localScale.y * 2) + (child.localScale.x - 2));
 
             Gizmos.DrawWireCube(transform.position, vec);
         }

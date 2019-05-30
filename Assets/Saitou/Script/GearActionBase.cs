@@ -15,8 +15,8 @@ namespace StarProject2019.Saitou
         [SerializeField, Header("回転を戻す方向")]
         protected GearPermission permission;
 
-        [Header("最大回転")]
-        public float _maxRotate;
+      
+        public float _maxRotate { get; protected set; }
 
         [SerializeField,Header("回転量がたまるスピードを調整"),Range(0.1f,1.0f)]
         protected float _amountRotateSpeed = 0.0f;
