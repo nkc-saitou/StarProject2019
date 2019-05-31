@@ -9,12 +9,26 @@ namespace Matsumoto.Gimmick {
 
 		public Transform ToPlayerAnchor;
 		public SpriteMask MaskSprite;
+		public SpriteRenderer[] GateRenderers;
 
 		private Animator _gateAnimator;
+		private Material _gateMaterial;
 		private PlayerCamera _playerCamera;
 
 		// Use this for initialization
 		void Start() {
+
+			
+			if(GateRenderers.Length > 1) {
+				_gateMaterial = GateRenderers[0].material;
+				foreach(var item in GateRenderers) {
+					item.sharedMaterial = _gateMaterial;
+				}
+			}
+
+			_gateMaterial.EnableKeyword("EMISSION");
+			_gateMaterial.SetColor("_EmissionColor", new Color(2, 0, 0));
+
 			_gateAnimator = GetComponentInChildren<Animator>();
 			_playerCamera = FindObjectOfType<PlayerCamera>();
 
@@ -38,6 +52,8 @@ namespace Matsumoto.Gimmick {
 			// プレイヤーを止める
 			player.Stop();
 
+
+
 			// スピードを設定して開けさせる
 			_gateAnimator.SetFloat("DoorSpeed", 1.0f);
 
@@ -45,6 +61,8 @@ namespace Matsumoto.Gimmick {
 			var ratio = 0.0f;
 			while (ratio < 1.0f) {
 				ratio = _gateAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime;
+				_gateMaterial.SetColor("_EmissionColor", Color.Lerp(new Color(2, 0, 0), new Color(2, 2, 0), ratio));
+
 				yield return null;
 			}
 

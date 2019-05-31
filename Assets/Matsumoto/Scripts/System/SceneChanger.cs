@@ -27,10 +27,11 @@ public class SceneChanger : SingletonMonoBehaviour<SceneChanger> {
 		LoadShader();
 	}
 
-	public void MoveScene(string sceneName, float fadeInTime, float fadeOutTime, SceneChangeType type) {
-		if(_isMoving) return;
+	public bool MoveScene(string sceneName, float fadeInTime, float fadeOutTime, SceneChangeType type) {
+		if(_isMoving) return false;
 		_fadeType = materials[(int)type];
 		StartCoroutine(MoveSceneAnim(sceneName, fadeInTime, fadeOutTime));
+		return true;
 	}
 
 	private void LoadShader() {

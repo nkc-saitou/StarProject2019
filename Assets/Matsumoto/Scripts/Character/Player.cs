@@ -510,7 +510,6 @@ namespace Matsumoto.Character {
 
 			// 攻撃をやめるか判定
 			if(_lastAttackedTime + AttackHitTime < Time.time && IsAttacking) {
-				Debug.Log("False");
 				ToggleAttackState(false);
 			}
 
