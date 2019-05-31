@@ -365,7 +365,8 @@ namespace Matsumoto.Character {
 			MoveSpeed = vel.magnitude;
 
 			// 空気抵抗
-			vel = Vector2.MoveTowards(vel, new Vector2(), MoveSpeed * _currentStatus.AirResistance * Time.deltaTime);
+			var air = MoveSpeed * _currentStatus.AirResistance * Time.deltaTime;
+			vel = Vector2.MoveTowards(vel, new Vector2(), air);
 
 			// 適用
 			PlayerRig.velocity = vel;
