@@ -37,13 +37,35 @@ public class PauseMenu : MonoBehaviour
     private float axisTime; 
     
 	void Start () {
-        var SoundPos = FindObjectOfType<Matsumoto.Character.Player>().transform.position;
-        Matsumoto.Audio.AudioManager.PlaySE("OpenMenu", position: SoundPos);
     }
 	
 	void Update () {
         MenuSelect();
 	}
+
+    /// <summary>
+    /// 表示にされたとき
+    /// </summary>
+    void OnEnable()
+    {
+        MenuSound();
+    }
+    /// <summary>
+    /// 非表示にされたとき
+    /// </summary>
+    void OnDisable()
+    {
+        MenuSound();
+    }
+    /// <summary>
+    /// メニュー表示、非表示音
+    /// </summary>
+    void MenuSound()
+    {
+        // 音の鳴る位置
+        var SoundPos = FindObjectOfType<Matsumoto.Character.Player>().transform.position;
+        Matsumoto.Audio.AudioManager.PlaySE("OpenMenu", position: SoundPos);
+    }
 
     /// <summary>
     /// StageControllerのセットアップ
