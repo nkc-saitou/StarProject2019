@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class StageNode : MonoBehaviour {
 
@@ -11,11 +12,10 @@ public class StageNode : MonoBehaviour {
 	public GameObject FollowerModelPrefab;
 	public List<Transform> FindedFollowerPositions = new List<Transform>();
 
-	private float _freq = 1.0f;
-	private float _amp = 1.0f;
-	private Transform _lab;
-	private SpriteRenderer _labRenderer;
-	private bool _isPlayAnim;
+	private Animator _gateAnimator;
+	private float _animSpeed = 2.0f;
+
+	public event Action<bool> OnIsSelectedChanged;
 
 	[SerializeField]
 	private StageNode _nextStage;
@@ -27,8 +27,13 @@ public class StageNode : MonoBehaviour {
 		get; private set;
 	}
 
+	private bool _isSelected;
 	public bool IsSelected {
-		get; set;
+		get { return _isSelected; }
+		set {
+			if(_isSelected == value) return;
+			OnIsSelectedChanged(_isSelected = value);
+		}
 	}
 
 	public bool IsCleared {
@@ -48,20 +53,29 @@ public class StageNode : MonoBehaviour {
 	// Use this for initialization
 	public void SetUpNode(StageNode prevStage, int clearedCount, ref int followerCount) {
 
-		if(transform.childCount > 0)
-			_lab = transform.GetChild(0);
+		_gateAnimator = GetComponentInChildren<Animator>();
+		if(_gateAnimator)
+			_gateAnimator.SetFloat("DoorSpeed", -1 * _animSpeed);
 
-		_labRenderer = GetComponentInChildren<SpriteRenderer>();
+		OnIsSelectedChanged += e => {
+			if(_gateAnimator) {
+				var t = _gateAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime;
+				t = Mathf.Clamp(t, 0, 1);
+				_gateAnimator.Play("gate", 0, t);
+				_gateAnimator.SetFloat("DoorSpeed", (IsSelected ? 1 : -1) * _animSpeed);
+			}
+		};
 
 		IsCleared = clearedCount > 0;
 
 		PrevStage = prevStage;
 
-		// 簡単にクリア状態を表示
-		var spr = GetComponentInChildren<SpriteRenderer>();
-		if(spr) {
-			spr.color = IsCleared ? Color.white : Color.gray;
-		}
+		// クリア状態を表示
+		//if(IsCleared) {
+		//	var anim = GetComponentInChildren<Animator>();
+		//	if(anim)
+		//		anim.Play("gate", 0, 1);
+		//}
 
 		// 助けた数を表示
 		FollowerFindData followerData = new FollowerFindData();
@@ -84,32 +98,29 @@ public class StageNode : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if(IsSelected && _lab && !_isPlayAnim) {
-			StartCoroutine(SelectedAnim());
-		}
 	}
 
-	private IEnumerator SelectedAnim() {
-		_isPlayAnim = true;
-		_labRenderer.sortingOrder = 100;
+	//private IEnumerator SelectedAnim() {
+	//	_isPlayAnim = true;
+	//	_labRenderer.sortingOrder = 100;
 
-		var t = 0.0f;
+	//	var t = 0.0f;
 
-		while(t < 0.5f) {
+	//	while(t < 0.5f) {
 
-			t = Mathf.Min(t + Time.deltaTime * _freq, 0.5f);
-			_lab.transform.localScale = Vector3.one * (1 + Mathf.Sin(t * 2 * Mathf.PI) * _amp);
-			yield return null;
-		}
+	//		t = Mathf.Min(t + Time.deltaTime * _freq, 0.5f);
+	//		_lab.transform.localScale = Vector3.one * (1 + Mathf.Sin(t * 2 * Mathf.PI) * _amp);
+	//		yield return null;
+	//	}
 
-		if(IsSelected && _lab && !_isPlayAnim) {
-			StartCoroutine(SelectedAnim());
-		}
-		else {
-			_isPlayAnim = false;
-			_labRenderer.sortingOrder = 0;
-		}
-	}
+	//	if(IsSelected && _lab && !_isPlayAnim) {
+	//		StartCoroutine(SelectedAnim());
+	//	}
+	//	else {
+	//		_isPlayAnim = false;
+	//		_labRenderer.sortingOrder = 0;
+	//	}
+	//}
 
 	public void OnDrawGizmos() {
 		if(!NextStage) return;
