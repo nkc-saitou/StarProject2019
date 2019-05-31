@@ -20,6 +20,8 @@ namespace StarProject2019.Saitou
 
         [SerializeField] bool isWallIgnore = false;
 
+        [SerializeField] GameObject puropera;
+
         GameObject _target;
 
         Player _player;
@@ -41,12 +43,24 @@ namespace StarProject2019.Saitou
             float z = (transform.parent.rotation.z > 0 ? transform.parent.rotation.z : transform.parent.rotation.z * -1);
             float w = (transform.parent.rotation.w > 0 ? transform.parent.rotation.w : transform.parent.rotation.w * -1);
 
-            Vector3 size;
+            // エフェクトのサイズを変える
+            Vector3 effectSize;
+            Vector3 puroperaSize = puropera.transform.localScale;
+            if ((z >= 0.6f && z <= 0.8f) && (w >= 0.6f && w <= 0.8f))
+            {
+                effectSize = new Vector3(transform.localScale.y * 2, transform.localScale.y * 2);
 
-            if ((z >= 0.6f && z <= 0.8f) && (w >= 0.6f && w <= 0.8f)) size = new Vector3(transform.localScale.y * 2, transform.localScale.y * 2);
-            else size = new Vector3(transform.localScale.x * 2, transform.localScale.x * 2);
+                puroperaSize = new Vector3(transform.localScale.y, puroperaSize.y, puroperaSize.z);
+            }
+            else
+            {
+                effectSize = new Vector3(transform.localScale.x * 2, transform.localScale.x * 2);
 
-            particleShape.scale = size;
+                puroperaSize = new Vector3(transform.localScale.x, puroperaSize.y, puroperaSize.z);
+            }
+
+            particleShape.scale = effectSize;
+            puropera.transform.localScale = puroperaSize;
         }
 
         void Update()
@@ -76,6 +90,9 @@ namespace StarProject2019.Saitou
             }
         }
 
+        /// <summary>
+        /// 風の影響を与える
+        /// </summary>
         public void ActiveEffect()
         {
             if (_player.gameObject != _target) return;
