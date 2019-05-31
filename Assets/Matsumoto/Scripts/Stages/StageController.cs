@@ -27,6 +27,7 @@ public class StageController : MonoBehaviour {
 	public PauseMenu PauseMenuCamvas;
 
 	public bool IsCreateStage = true;
+	public bool IsOverride = false;
 	public bool IsReturnToSelect = true;
 	public bool CanPause = false;
 
@@ -45,7 +46,8 @@ public class StageController : MonoBehaviour {
 
 	private void Awake() {
 
-		GameData.Instance.GetData(StageSelectController.LoadSceneKey, ref StagePath);
+		if(!IsOverride)
+			GameData.Instance.GetData(StageSelectController.LoadSceneKey, ref StagePath);
 
 		// ステージ生成
 		CreateStage(StagePath);

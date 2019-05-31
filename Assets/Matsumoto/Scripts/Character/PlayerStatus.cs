@@ -10,7 +10,7 @@ public class PlayerStatus : ScriptableObject {
 	public Color BodyColor;
 	public float MaxSpeed;
 	public float MaxDashSpeed;
-	public float DashPower;
+	public float AttackPower;
 	public float MaxAddSpeed;
 	public float MaxSubSpeed;
 	public float Gravity;
