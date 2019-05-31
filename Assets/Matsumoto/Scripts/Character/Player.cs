@@ -111,7 +111,7 @@ namespace Matsumoto.Character {
 
 		public bool IsRotate {
 			get; set;
-		}
+		} = true;
 
 		private bool _isDash;
 		public bool IsDash {
@@ -391,7 +391,7 @@ namespace Matsumoto.Character {
 		private void AnimationUpdate() {
 
 			var speed = RollSpeed / 2;
-			if(IsRotate) speed = 0;
+			if(!IsRotate) speed = 0;
 
 			_animator.SetFloat("Speed", speed);
 		}

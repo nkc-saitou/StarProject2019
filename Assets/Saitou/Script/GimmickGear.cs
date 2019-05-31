@@ -128,13 +128,14 @@ namespace StarProject2019.Saitou
             if ((IsRotate() == false || _player.State != PlayerState.Star))
             {
 
-                _player.IsRotate = true;
-                // アニメーション
-                _animator.SetFloat("Speed", 0);
+                _player.IsRotate = false;
+
+				// アニメーション
+				_animator.SetFloat("Speed", 0);
                 return;
             }
 
-            _player.IsRotate = false;
+            _player.IsRotate = true;
 
             // 回転速度
             RollSpeed = (_player.RollSpeed < 0 ? _player.RollSpeed * -1 : _player.RollSpeed);
@@ -220,15 +221,15 @@ namespace StarProject2019.Saitou
                 else State = GearState.Free;
             }
             // 一定以上離れたら関与しない
-            else if(dis > maxdis && dis < 1.2f && isFirstStop == true)
+            else if(dis > maxdis && isFirstStop == true)
             {
                 // 離れたのでtrue
                 isExit = true;
                 isFirstStop = false;
 
-                State = GearState.Free;
-                _player.IsRotate = false;
-            }
-        }
+				State = GearState.Free;
+                _player.IsRotate = true;
+			}
+		}
     }
 }
