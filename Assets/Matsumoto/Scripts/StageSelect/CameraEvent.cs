@@ -9,12 +9,11 @@ public class CameraEvent : MonoBehaviour, IStageMoveEvent {
 	public Vector3 MovePosition;
 	public float Speed = 10.0f;
 
-	private Vector3 _startPosition;
+	private Vector3? _startPosition;
 	private Camera _targetCamera;
 
 	private void Awake() {
 		_targetCamera = Camera.main;
-		_startPosition = _targetCamera.transform.position;
 	}
 
 	public float GetPosition() {
@@ -27,15 +26,18 @@ public class CameraEvent : MonoBehaviour, IStageMoveEvent {
 		}
 		else {
 			_targetCamera.transform.position = 
-				forward ? MovePosition : _startPosition;
+				forward ? MovePosition : (Vector3)_startPosition;
 		}
 	}
 
 	private IEnumerator CameraMoveAnim(StageSelectController controller, bool forward) {
 
+		if(_startPosition == null)
+			_startPosition = _targetCamera.transform.position;
+
 		controller.IsFreeze = true;
-		var start = forward ? _startPosition : MovePosition;
-		var end = forward ? MovePosition : _startPosition;
+		var start = forward ? (Vector3)_startPosition : MovePosition;
+		var end = forward ? MovePosition : (Vector3)_startPosition;
 		var t = 0.0f;
 		while(t < 1.0f) {
 
