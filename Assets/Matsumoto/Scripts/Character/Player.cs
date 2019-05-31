@@ -322,10 +322,6 @@ namespace Matsumoto.Character {
 			if(addSpeed != 0) RollSpeed += addSpeed * _currentStatus.MaxAddSpeed;
 			else RollSpeed = Mathf.MoveTowards(RollSpeed, 0, _currentStatus.MaxSubSpeed);
 
-			if(Mathf.Abs(RollSpeed) < _currentStatus.MaxSpeed) {
-				IsDash = false;
-			}
-
 			var maxSpeed = IsDash ? _currentStatus.MaxDashSpeed : _currentStatus.MaxSpeed;
 
 			// 最大速度を制限
@@ -349,7 +345,7 @@ namespace Matsumoto.Character {
 			g += ToVector(_gravityDirection) * _currentStatus.Gravity * Time.deltaTime; // gravity
 
 			var diff = v - MoveVector * RollSpeed;
-			diff = Vector2.MoveTowards(diff, new Vector2(), _currentStatus.MaxSubSpeed*2);
+			diff = Vector2.MoveTowards(diff, new Vector2(), _currentStatus.MaxSubSpeed * 2);
 			v = MoveVector * RollSpeed + diff;
 
 			vel = g + v;
@@ -359,6 +355,10 @@ namespace Matsumoto.Character {
 
 			// 空気抵抗
 			vel = Vector2.MoveTowards(vel, new Vector2(), MoveSpeed * _currentStatus.AirResistance * Time.deltaTime);
+
+			if(vel.magnitude < _currentStatus.MaxSpeed) {
+				IsDash = false;
+			}
 
 			// 適用
 			PlayerRig.velocity = vel;
