@@ -34,7 +34,7 @@ namespace Matsumoto.Character {
 		public float AttackHitTime = 0.2f;
 		public float AttackWaitTime = 0.3f; // AttackHitTimeより大きくないと判定がアレ
 		public float JumpWaitTime = 0.2f;
-		public bool DashIsAttack = true;
+		//public bool DashIsAttack = true;
 
 		public Collider2D AttackCollider;
 		public DynamicBone PlayerModel;
@@ -182,9 +182,11 @@ namespace Matsumoto.Character {
 						break;
 					case PlayerState.Morphing:
 						MoveEffect.Stop();
+						if(IsAttacking) ToggleAttackState(false);
 						break;
 					case PlayerState.Circle:
 						MoveEffect.Play();
+						if(IsAttacking) ToggleAttackState(false);
 						break;
 					default:
 						break;
@@ -192,9 +194,9 @@ namespace Matsumoto.Character {
 			};
 
 			OnIsDashChanged += e => {
-				if (!DashIsAttack) return;
-				Debug.Log("Toggled " + e);
-				ToggleAttackState(e);
+				//if (!DashIsAttack) return;
+				//Debug.Log("Toggled " + e);
+				//ToggleAttackState(e);
 			};
 
 			ChangeState(PlayerState.Star, true);
@@ -322,11 +324,11 @@ namespace Matsumoto.Character {
 			if(addSpeed != 0) RollSpeed += addSpeed * _currentStatus.MaxAddSpeed;
 			else RollSpeed = Mathf.MoveTowards(RollSpeed, 0, _currentStatus.MaxSubSpeed);
 
+			var maxSpeed = IsDash ? _currentStatus.MaxDashSpeed : _currentStatus.MaxSpeed;
+
 			if(Mathf.Abs(RollSpeed) < _currentStatus.MaxSpeed) {
 				IsDash = false;
 			}
-
-			var maxSpeed = IsDash ? _currentStatus.MaxDashSpeed : _currentStatus.MaxSpeed;
 
 			// 最大速度を制限
 			RollSpeed = Mathf.Clamp(RollSpeed, -maxSpeed, maxSpeed);
@@ -349,8 +351,13 @@ namespace Matsumoto.Character {
 			g += ToVector(_gravityDirection) * _currentStatus.Gravity * Time.deltaTime; // gravity
 
 			var diff = v - MoveVector * RollSpeed;
-			diff = Vector2.MoveTowards(diff, new Vector2(), _currentStatus.MaxSubSpeed*2);
-			v = MoveVector * RollSpeed + diff;
+			diff = Vector2.MoveTowards(diff, new Vector2(), _currentStatus.MaxSubSpeed * 2);
+			if(IsAttacking) {
+				//v += MoveVector * RollSpeed * Time.deltaTime;
+			}
+			else {
+				v = MoveVector * RollSpeed + diff;
+			}
 
 			vel = g + v;
 
@@ -445,7 +452,7 @@ namespace Matsumoto.Character {
 			_currentStatus.BodyColor = Color.Lerp(StarStatus.BodyColor, CircleStatus.BodyColor, ratio);
 			_currentStatus.MaxSpeed = Mathf.Lerp(StarStatus.MaxSpeed, CircleStatus.MaxSpeed, ratio);
 			_currentStatus.MaxDashSpeed = Mathf.Lerp(StarStatus.MaxDashSpeed, CircleStatus.MaxDashSpeed, ratio);
-			_currentStatus.DashPower = Mathf.Lerp(StarStatus.DashPower, CircleStatus.DashPower, ratio);
+			_currentStatus.AttackPower = Mathf.Lerp(StarStatus.AttackPower, CircleStatus.AttackPower, ratio);
 			_currentStatus.MaxAddSpeed = Mathf.Lerp(StarStatus.MaxAddSpeed, CircleStatus.MaxAddSpeed, ratio);
 			_currentStatus.MaxSubSpeed = Mathf.Lerp(StarStatus.MaxSubSpeed, CircleStatus.MaxSubSpeed, ratio);
 			_currentStatus.Gravity = Mathf.Lerp(StarStatus.Gravity, CircleStatus.Gravity, ratio);
@@ -501,12 +508,9 @@ namespace Matsumoto.Character {
 			_attackWait = Mathf.Max(_attackWait, 0);
 
 			// 攻撃をやめるか判定
-			if (DashIsAttack) {
-
-			}
-			else {
-				if(_lastAttackedTime + AttackHitTime > Time.time && IsAttacking)
-					ToggleAttackState(false);
+			if(_lastAttackedTime + AttackHitTime < Time.time && IsAttacking) {
+				Debug.Log("False");
+				ToggleAttackState(false);
 			}
 
 
@@ -532,7 +536,7 @@ namespace Matsumoto.Character {
 
 			if(_gravityDirection == Angle.Up) RollSpeed *= -1;
 
-			PlayerRig.AddForce(input * _currentStatus.DashPower);
+			PlayerRig.velocity = (input * _currentStatus.AttackPower);
 			IsDash = true;
 
 			AudioManager.PlaySE("Dash", position:transform.position);
@@ -620,6 +624,7 @@ namespace Matsumoto.Character {
 			IsFreeze = true;
 			PlayerRig.simulated = true;
 			PlayerRig.velocity = new Vector2(0, -Mathf.Abs(PlayerRig.velocity.y));
+			ToggleAttackState(false);
 			RollSpeed = 0;
 			AnimationUpdate();
 			StartCoroutine(MorphAnimation(PlayerState.Star, MorphSpeed));

@@ -18,13 +18,14 @@ namespace Matsumoto.Character {
 		private Vector2 _angleOffset;
 		private Vector2 _screenRatio;
 
-		// Use this for initialization
-		void Start() {
+		private void Awake() {
 			_zPosition = transform.position.z;
 			_screenRatio = new Vector2(1, (float)Screen.height / Screen.width);
+		}
 
+		// Use this for initialization
+		void Start() {
 			var controller = FindObjectOfType<StageController>();
-
 			controller.OnGameClear += (c) => IsFreeze = true;
 			controller.OnGameOver += (c) => IsFreeze = true;
 		}
@@ -62,8 +63,9 @@ namespace Matsumoto.Character {
 		public void SetTarget(Player target) {
 
 			var pos = target.transform.position;
-			pos.z = transform.position.z;
-			transform.position = _prevPosition = pos;
+			pos.z = _zPosition;
+			_prevPosition = transform.position = pos;
+
 			TargetPlayer = target;
 		}
 	}
