@@ -114,7 +114,7 @@ public class PatrolEnemy : EnemyBase, IEnemy
     public void Action()
     {
         // プレイヤー判定用レイヤー
-        int playerLayer = LayerMask.GetMask("Player", "PlayerFollower");
+        int playerLayer = LayerMask.GetMask("Player");
 
         // LineRendererをアクティブにする
         if (lineRen.enabled == false && visible == true) {
@@ -132,7 +132,7 @@ public class PatrolEnemy : EnemyBase, IEnemy
             if (playerHit.collider != null)
             {
                 var player = playerHit.collider.gameObject.GetComponent<Matsumoto.Character.Player>();
-                if (player != null) player.ApplyDamage(gameObject, DamageType.Enemy);
+                if (player != null) player.ApplyDamage(gameObject, DamageType.Gimmick);
             }
         }
         
