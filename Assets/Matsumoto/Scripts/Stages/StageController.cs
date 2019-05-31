@@ -87,7 +87,7 @@ public class StageController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if (Input.GetKeyDown(KeyCode.Escape) && CanPause) {
+		if (Input.GetButtonDown("Menu") && CanPause) {
 			PauseSystem.Instance.IsPause = !PauseSystem.Instance.IsPause;
 			PauseMenuCamvas.gameObject.SetActive(!PauseMenuCamvas.gameObject.activeSelf);
 		}
