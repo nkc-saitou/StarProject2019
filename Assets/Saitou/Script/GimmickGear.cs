@@ -51,6 +51,8 @@ namespace StarProject2019.Saitou
 
         float dis = 0;
 
+        float maxdis = 0.95f;
+
         //------------------------------------------
         // プロパティ
         //------------------------------------------
@@ -204,7 +206,7 @@ namespace StarProject2019.Saitou
         void PlayerRotateControl()
         {
             // 歯車と近づいていたら
-            if (dis <= 0.9f && isFirstStop == false)
+            if (dis <= maxdis && isFirstStop == false)
             {
                 // 近づいているのでfalse
                 isExit = false;
@@ -218,7 +220,7 @@ namespace StarProject2019.Saitou
                 else State = GearState.Free;
             }
             // 一定以上離れたら関与しない
-            else if(dis > 0.9f && dis < 1.2f && isFirstStop == true)
+            else if(dis > maxdis && dis < 1.2f && isFirstStop == true)
             {
                 // 離れたのでtrue
                 isExit = true;
