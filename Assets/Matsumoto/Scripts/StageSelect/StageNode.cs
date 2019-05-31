@@ -83,7 +83,7 @@ public class StageNode : MonoBehaviour {
 		var count = followerData.FindedIndexList.Count;
 		followerCount += count;
 		for (int i = 0; i < count; i++) {
-			if(FindedFollowerPositions.Count < i) break;
+			if(FindedFollowerPositions.Count <= i) break;
 			var t = FindedFollowerPositions[i];
 			var f = Instantiate(FollowerModelPrefab, t.position, t.rotation);
 			f.transform.localScale = Vector3.one * 0.5f;
