@@ -16,9 +16,6 @@ public class PatrolEnemy : EnemyBase, IEnemy
     private Vector2 targetPos;
     // 自身の原点
     private Vector2 originPos;
-    // 探索位置
-    [SerializeField]
-    private Vector2 moveValue;
     // 目標地点
     private Vector2 goalPos;
 
@@ -38,6 +35,8 @@ public class PatrolEnemy : EnemyBase, IEnemy
 
     // 移動に使う変数
     [SerializeField]
+    private Vector2 moveVec;
+    [SerializeField]
     private float speed;
     float time = 0.0f;
 
@@ -47,10 +46,7 @@ public class PatrolEnemy : EnemyBase, IEnemy
         lineRen = GetComponent<LineRenderer>();
         lineRen.enabled = false;
         target = FindObjectOfType<Matsumoto.Character.Player>().gameObject;
-        currentPos = transform.position;
         originPos = transform.position;
-        goalPos = originPos + moveValue;
-        targetPos = goalPos;
         canAction = true;
     }
 	
@@ -72,20 +68,9 @@ public class PatrolEnemy : EnemyBase, IEnemy
     /// </summary>
     public void Move()
     {
-        time += Time.deltaTime;
-
         // 目標地点に移動
-        transform.position = Vector2.Lerp(transform.position, targetPos, time * speed);
-        // 現在位置の更新
-        currentPos = transform.position;
-
-        // 目標地点に近づいたら行き先変更
-        if(Mathf.Abs(currentPos.x - targetPos.x) + Mathf.Abs(currentPos.y - targetPos.y) <= 0.5f) {
-            if (targetPos == originPos) targetPos = goalPos;
-            else if (targetPos == goalPos) targetPos = originPos;
-
-            time = 0.0f;
-        }
+        var pos = new Vector2(originPos.x, originPos.y + 5.0f * moveVec.y);
+        transform.position = pos + moveVec * Mathf.Sin(Time.time) * speed;
     }
 
     /// <summary>
