@@ -14,7 +14,7 @@ public class StageSelectController : MonoBehaviour {
 	public const string LoadSceneKey = "LoadScene";
 	public const string StageProgressKey = "StageProgress";
 
-	private static bool _isFirstLoaded = true;
+	private static int _lastSelectedStageIndex;
 
 	public StageNode FirstNode;
 	public Transform PlayerModel;
@@ -62,15 +62,8 @@ public class StageSelectController : MonoBehaviour {
 		// ステージノードのセットアップ(+1はタイトル分)
 		FirstNode.SetUpNode(null, stageProgress + 1, ref followerCount);
 
-		if(_isFirstLoaded) {
-			_isFirstLoaded = false;
-			_currentSelectedStage = _targetStage = FirstNode;
-		}
-		else {
-			// 進めたステージまで移動
-			_currentSelectedStage = _targetStage = GetStageNode(stageProgress);
-			if(_currentSelectedStage != FirstNode) State = StageSelectState.Select;
-		}
+		_targetStage = _currentSelectedStage = GetStageNode(_lastSelectedStageIndex);
+		if(_currentSelectedStage != FirstNode) State = StageSelectState.Select;
 
 		_playerPositionTarget = GetLength(_targetStage);
 
@@ -141,7 +134,8 @@ public class StageSelectController : MonoBehaviour {
 		// ステージ用BGM
 		AudioManager.FadeOut(1.0f);
 
-		GameData.Instance.SetData(LoadSceneKey, _targetStage.TargetStageName);
+		_lastSelectedStageIndex = GetStageIndex(_currentSelectedStage);
+		GameData.Instance.SetData(LoadSceneKey, _currentSelectedStage.TargetStageName);
 		_isSceneMoving = SceneChanger.Instance.MoveScene("GameScene", 1.0f, 1.0f, SceneChangeType.StarBlackFade);
 	}
 
@@ -187,6 +181,21 @@ public class StageSelectController : MonoBehaviour {
 		}
 
 		return current;
+	}
+
+	private int GetStageIndex(StageNode stage) {
+
+		if(!stage) return 0;
+
+		var current = FirstNode;
+		var count = 0;
+		while(current != stage) {
+			if(!current.NextStage) break;
+			current = current.NextStage;
+			count++;
+		}
+
+		return count;
 	}
 
 	private float GetLength(StageNode to) {
