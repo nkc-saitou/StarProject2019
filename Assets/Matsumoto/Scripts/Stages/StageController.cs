@@ -26,8 +26,8 @@ public class StageController : MonoBehaviour {
 	public event Action<StageController> OnGameClear;
 	public event Action<StageController> OnGameOver;
 
-	public GameObject PlayerFollowerPrefab;
-	public PauseMenu PauseMenuCamvas;
+	public PlayerFollower PlayerFollowerPrefab;
+	public PauseMenu PauseMenuCanvas;
 
 	public bool IsCreateStage = true;
 	public bool IsOverride = false;
@@ -37,6 +37,9 @@ public class StageController : MonoBehaviour {
 	public string StagePath = "TestStage";
 	private string _followerDataKey;
 	private List<GimmickChip> _gimmicks = new List<GimmickChip>();
+
+	// 救出している最中のもの
+	private HalfPointData _halfPointData = new HalfPointData();
 
 	public GameState State {
 		get; private set;
@@ -48,12 +51,6 @@ public class StageController : MonoBehaviour {
 		get { return _followerData; }
 	}
 
-	// 救出している最中のもの
-	private FollowerFindData _halfFollowerData = new FollowerFindData();
-	public FollowerFindData HalfFollowerData {
-		get { return _halfFollowerData; }
-	}
-
 	private void Awake() {
 
 		if(!IsOverride)
@@ -62,26 +59,9 @@ public class StageController : MonoBehaviour {
 		// ステージ生成
 		CreateStage(StagePath);
 
-		// 中間地点のデータ読み込み
-		var player = FindObjectOfType<Player>();
-		if (GameData.Instance.GetData(HalfwayPointKey, ref _harfPointPosition)) {
-			player.transform.position = _harfPointPosition;
-			FindObjectOfType<PlayerCamera>().SetTarget(player);
-		}
-
 		var followerChipIndex = FindObjectsOfType<FollowPlayerChip>()
 			.Select(item => item.FollowerIndex)
 			.ToArray();
-
-		if(GameData.Instance.GetData(HalfwayPointKey + StageFollowerDataTarget, ref _halfFollowerData)) {
-			// 生成
-			foreach (var item in _halfFollowerData.FindedIndexList) {
-				Instantiate(PlayerFollowerPrefab, player.transform.position, player.transform.rotation);
-			}
-
-			// データを統合して取得したことにする
-			_followerData.FindedIndexList.AddRange(_halfFollowerData.FindedIndexList);
-		}
 
 		// フォロワーのデータ取得
 		_followerDataKey = StagePath + StageFollowerDataTarget;
@@ -92,6 +72,26 @@ public class StageController : MonoBehaviour {
 			.Where(data => Array.Exists(followerChipIndex, x => x == data))
 			.ToList();
 
+		// 中間地点のデータ読み込み
+		var player = FindObjectOfType<Player>();
+		var delayAct = new Action(() => { });
+		if (GameData.Instance.GetData(HalfwayPointKey, ref _halfPointData)) {
+
+			 delayAct = () => {
+				player.transform.position = _halfPointData.PlayerPosition;
+				FindObjectOfType<PlayerCamera>().SetTarget(player);
+			};
+
+			// 生成
+			foreach(var item in _halfPointData.FollowerData.FindedIndexList) {
+				var f = Instantiate(PlayerFollowerPrefab, _halfPointData.PlayerPosition, Quaternion.identity);
+				f.Target = player;
+			}
+
+			// データを統合して取得したことにする
+			_followerData.FindedIndexList.AddRange(_halfPointData.FollowerData.FindedIndexList);
+		}
+
 		// ギミック
 		_gimmicks = FindObjectsOfType<GimmickChip>().ToList();
 		foreach(var item in _gimmicks) {
@@ -99,8 +99,10 @@ public class StageController : MonoBehaviour {
 			item.GimmickStart();
 		}
 
-		PauseMenuCamvas.SetStageController(this);
-		PauseMenuCamvas.gameObject.SetActive(false);
+		delayAct();
+
+		PauseMenuCanvas.SetStageController(this);
+		PauseMenuCanvas.gameObject.SetActive(false);
 
 	}
 
@@ -118,7 +120,7 @@ public class StageController : MonoBehaviour {
 
 		if (Input.GetButtonDown("Menu") && CanPause) {
 			PauseSystem.Instance.IsPause = !PauseSystem.Instance.IsPause;
-			PauseMenuCamvas.gameObject.SetActive(!PauseMenuCamvas.gameObject.activeSelf);
+			PauseMenuCanvas.gameObject.SetActive(!PauseMenuCanvas.gameObject.activeSelf);
 		}
 
 	}
@@ -192,14 +194,12 @@ public class StageController : MonoBehaviour {
 
 	public void AddFollowerData(int index) {
 		_followerData.FindedIndexList.Add(index);
-		_halfFollowerData.FindedIndexList.Add(index);
+		_halfPointData.FollowerData.FindedIndexList.Add(index);
 	}
 
 	public void SetHalfPoint(Vector3 position) {
-		_harfPointPosition = position;
-		GameData.Instance.SetData(HalfwayPointKey, _harfPointPosition);
-		GameData.Instance.SetData(HalfwayPointKey + StageFollowerDataTarget, _halfFollowerData);
-
+		_halfPointData.PlayerPosition = position;
+		GameData.Instance.SetData(HalfwayPointKey, _halfPointData);
 	}
 }
 
@@ -207,7 +207,20 @@ namespace Matsumoto {
 
 	[Serializable]
 	public class HalfPointData {
-		public Vector3 PlayerPosition;
+		public float PlayerPositionX;
+		public float PlayerPositionY;
+		public float PlayerPositionZ;
+
+		public Vector3 PlayerPosition {
+			get { return new Vector3(PlayerPositionX, PlayerPositionY, PlayerPositionZ); }
+			set {
+				PlayerPositionX	= value.x;
+				PlayerPositionY	= value.y;
+				PlayerPositionZ = value.z;
+			}
+		}
+
+		public FollowerFindData FollowerData = new FollowerFindData();
 	}
 
 }

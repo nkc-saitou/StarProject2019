@@ -7,7 +7,7 @@ namespace Matsumoto.Gimmick {
 
 	public class PlayerStartChip : GimmickChip {
 
-		private void Start() {
+		public override void GimmickStart() {
 
 			var player = FindObjectOfType<Player>();
 			player.transform.position = transform.position;

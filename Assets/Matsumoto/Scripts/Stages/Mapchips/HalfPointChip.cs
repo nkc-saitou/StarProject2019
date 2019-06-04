@@ -27,9 +27,7 @@ namespace Matsumoto.Gimmick {
 
 		private IEnumerator ReUseWait() {
 			HalfPointImage.sprite = NormalAndActiveSprite[1];
-			Collider.enabled = false;
 			yield return new WaitForSeconds(reuseTime);
-			Collider.enabled = true;
 			HalfPointImage.sprite = NormalAndActiveSprite[0];
 		}
 
