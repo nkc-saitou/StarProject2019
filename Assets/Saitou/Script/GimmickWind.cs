@@ -103,7 +103,7 @@ namespace StarProject2019.Saitou
             if (_rg == null) return;
 
             float moveForceMultiplier = 2.0f;
-            _rg.AddForce(moveForceMultiplier * (((Vector2)transform.up * windPower) - _rg.velocity));
+            _rg.AddForce(moveForceMultiplier * (((Vector2)transform.up.normalized * windPower * Time.deltaTime) - _rg.velocity));
 
         }
     }
