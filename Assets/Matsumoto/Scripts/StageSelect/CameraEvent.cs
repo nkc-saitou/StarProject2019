@@ -25,6 +25,10 @@ public class CameraEvent : MonoBehaviour, IStageMoveEvent {
 			StartCoroutine(CameraMoveAnim(controller, forward));
 		}
 		else {
+
+			if(_startPosition == null)
+				_startPosition = _targetCamera.transform.position;
+
 			_targetCamera.transform.position = 
 				forward ? MovePosition : (Vector3)_startPosition;
 		}

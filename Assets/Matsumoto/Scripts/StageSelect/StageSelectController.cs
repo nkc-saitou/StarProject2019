@@ -142,7 +142,7 @@ public class StageSelectController : MonoBehaviour {
 		AudioManager.FadeOut(1.0f);
 
 		GameData.Instance.SetData(LoadSceneKey, _targetStage.TargetStageName);
-		SceneChanger.Instance.MoveScene("GameScene", 1.0f, 1.0f, SceneChangeType.StarBlackFade);
+		_isSceneMoving = SceneChanger.Instance.MoveScene("GameScene", 1.0f, 1.0f, SceneChangeType.StarBlackFade);
 	}
 
 	private void MovePlayer(float position) {

@@ -25,7 +25,7 @@ Shader "New Amplify Shader 1"
 
 	SubShader
 	{
-		Tags{ "RenderType" = "TransparentCutout"  "Queue" = "AlphaTest+0" "IsEmissive" = "true"  }
+		Tags{ "RenderType" = "TransparentCutout"  "Queue" = "AlphaTest-1" "IsEmissive" = "true"  }
 		Cull Back
 		CGPROGRAM
 		#include "UnityShaderVariables.cginc"

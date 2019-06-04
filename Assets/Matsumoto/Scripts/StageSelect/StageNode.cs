@@ -11,9 +11,11 @@ public class StageNode : MonoBehaviour {
 
 	public GameObject FollowerModelPrefab;
 	public List<Transform> FindedFollowerPositions = new List<Transform>();
+	public SpriteRenderer[] GateRenderers;
 
 	private Animator _gateAnimator;
 	private float _animSpeed = 2.0f;
+	private Material _gateMaterial;
 
 	public event Action<bool> OnIsSelectedChanged;
 
@@ -53,6 +55,13 @@ public class StageNode : MonoBehaviour {
 	// Use this for initialization
 	public void SetUpNode(StageNode prevStage, int clearedCount, ref int followerCount) {
 
+		if(GateRenderers.Length > 1) {
+			_gateMaterial = GateRenderers[0].material;
+			foreach(var item in GateRenderers) {
+				item.sharedMaterial = _gateMaterial;
+			}
+		}
+
 		_gateAnimator = GetComponentInChildren<Animator>();
 		if(_gateAnimator)
 			_gateAnimator.SetFloat("DoorSpeed", -1 * _animSpeed);
@@ -71,11 +80,11 @@ public class StageNode : MonoBehaviour {
 		PrevStage = prevStage;
 
 		// クリア状態を表示
-		//if(IsCleared) {
-		//	var anim = GetComponentInChildren<Animator>();
-		//	if(anim)
-		//		anim.Play("gate", 0, 1);
-		//}
+		if(_gateMaterial) {
+			_gateMaterial.EnableKeyword("EMISSION");
+			var c = IsCleared ? new Color(2, 2, 0) : new Color(2, 0, 0);
+			_gateMaterial.SetColor("_EmissionColor", c);
+		}
 
 		// 助けた数を表示
 		FollowerFindData followerData = new FollowerFindData();
@@ -83,7 +92,7 @@ public class StageNode : MonoBehaviour {
 		var count = followerData.FindedIndexList.Count;
 		followerCount += count;
 		for (int i = 0; i < count; i++) {
-			if(FindedFollowerPositions.Count < i) break;
+			if(FindedFollowerPositions.Count <= i) break;
 			var t = FindedFollowerPositions[i];
 			var f = Instantiate(FollowerModelPrefab, t.position, t.rotation);
 			f.transform.localScale = Vector3.one * 0.5f;

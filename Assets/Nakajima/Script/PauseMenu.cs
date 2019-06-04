@@ -62,8 +62,12 @@ public class PauseMenu : MonoBehaviour
     /// </summary>
     void MenuSound()
     {
-        // 音の鳴る位置
-        var SoundPos = FindObjectOfType<Matsumoto.Character.Player>().transform.position;
+        // 音の鳴る位置をプレイヤーの位置にする
+        var player = FindObjectOfType<Matsumoto.Character.Player>();
+        if (player == null) return;
+
+        // プレイヤーが居る場合のみ音を鳴らす
+        var SoundPos = player.transform.position;
         Matsumoto.Audio.AudioManager.PlaySE("OpenMenu", position: SoundPos);
     }
 
