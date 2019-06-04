@@ -53,6 +53,8 @@ public class StageSelectController : MonoBehaviour {
 			.OrderBy(x => x.GetPosition())
 			.ToList();
 
+		GameData.Instance.Load();
+
 		// 進行度読み込み
 		var clearedStages = new HashSet<string>();
 		GameData.Instance.GetData(StageProgressKey, ref clearedStages);

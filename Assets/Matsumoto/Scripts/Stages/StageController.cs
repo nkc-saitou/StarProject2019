@@ -8,6 +8,7 @@ using UnityEngine.SceneManagement;
 using Matsumoto.Gimmick;
 using Matsumoto.Audio;
 using Matsumoto.Character;
+using Matsumoto;
 
 public enum GameState {
 	StartUp,
@@ -19,11 +20,13 @@ public enum GameState {
 public class StageController : MonoBehaviour {
 
 	public const string StageFollowerDataTarget = "_FollowerData";
+	public const string HalfwayPointKey = "HalfWay";
 
 	public event Action<StageController> OnGameStart;
 	public event Action<StageController> OnGameClear;
 	public event Action<StageController> OnGameOver;
 
+	public GameObject PlayerFollowerPrefab;
 	public PauseMenu PauseMenuCamvas;
 
 	public bool IsCreateStage = true;
@@ -39,9 +42,16 @@ public class StageController : MonoBehaviour {
 		get; private set;
 	} = GameState.StartUp;
 
+	// すでに救出したもの
 	private FollowerFindData _followerData = new FollowerFindData();
 	public FollowerFindData FollowerData {
 		get { return _followerData; }
+	}
+
+	// 救出している最中のもの
+	private FollowerFindData _halfFollowerData = new FollowerFindData();
+	public FollowerFindData HalfFollowerData {
+		get { return _halfFollowerData; }
 	}
 
 	private void Awake() {
@@ -52,15 +62,32 @@ public class StageController : MonoBehaviour {
 		// ステージ生成
 		CreateStage(StagePath);
 
+		// 中間地点のデータ読み込み
+		var player = FindObjectOfType<Player>();
+		if (GameData.Instance.GetData(HalfwayPointKey, ref _harfPointPosition)) {
+			player.transform.position = _harfPointPosition;
+			FindObjectOfType<PlayerCamera>().SetTarget(player);
+		}
+
+		var followerChipIndex = FindObjectsOfType<FollowPlayerChip>()
+			.Select(item => item.FollowerIndex)
+			.ToArray();
+
+		if(GameData.Instance.GetData(HalfwayPointKey + StageFollowerDataTarget, ref _halfFollowerData)) {
+			// 生成
+			foreach (var item in _halfFollowerData.FindedIndexList) {
+				Instantiate(PlayerFollowerPrefab, player.transform.position, player.transform.rotation);
+			}
+
+			// データを統合して取得したことにする
+			_followerData.FindedIndexList.AddRange(_halfFollowerData.FindedIndexList);
+		}
+
 		// フォロワーのデータ取得
 		_followerDataKey = StagePath + StageFollowerDataTarget;
 		GameData.Instance.GetData(_followerDataKey, ref _followerData);
 
 		// ステージにないデータを削除
-		var followerChipIndex = FindObjectsOfType<FollowPlayerChip>()
-			.Select(item => item.FollowerIndex)
-			.ToArray();
-
 		_followerData.FindedIndexList = _followerData.FindedIndexList
 			.Where(data => Array.Exists(followerChipIndex, x => x == data))
 			.ToList();
@@ -119,6 +146,9 @@ public class StageController : MonoBehaviour {
 
 		State = GameState.GameClear;
 
+		// 中間データを削除
+		GameData.Instance.DeleteData(HalfwayPointKey);
+
 		// フォロワーとクリアデータを保存
 		GameData.Instance.SetData(_followerDataKey, _followerData);
 
@@ -159,4 +189,25 @@ public class StageController : MonoBehaviour {
 		var sceneName = SceneManager.GetActiveScene().name;
 		SceneChanger.Instance.MoveScene(sceneName, 0.2f, 0.2f, SceneChangeType.BlackFade);
 	}
+
+	public void AddFollowerData(int index) {
+		_followerData.FindedIndexList.Add(index);
+		_halfFollowerData.FindedIndexList.Add(index);
+	}
+
+	public void SetHalfPoint(Vector3 position) {
+		_harfPointPosition = position;
+		GameData.Instance.SetData(HalfwayPointKey, _harfPointPosition);
+		GameData.Instance.SetData(HalfwayPointKey + StageFollowerDataTarget, _halfFollowerData);
+
+	}
+}
+
+namespace Matsumoto {
+
+	[Serializable]
+	public class HalfPointData {
+		public Vector3 PlayerPosition;
+	}
+
 }
