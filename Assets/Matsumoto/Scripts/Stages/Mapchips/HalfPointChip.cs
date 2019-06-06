@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Matsumoto.Character;
+using Matsumoto.Audio;
 
 namespace Matsumoto.Gimmick {
 
@@ -20,7 +21,7 @@ namespace Matsumoto.Gimmick {
 		public void OnTriggerEnter2D(Collider2D collition) {
 			var player = collition.GetComponent<Player>();
 			if(!player) return;
-
+			AudioManager.PlaySE("HalfPoint", position: transform.position);
 			Controller.SetHalfPoint(player.transform.position);
 			this.StartPausableCoroutine(ReUseWait());
 		}
