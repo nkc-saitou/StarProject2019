@@ -10,6 +10,7 @@ public class StageNode : MonoBehaviour {
 	public string TargetStageName;
 
 	public GameObject FollowerModelPrefab;
+	public GameObject FollowerChipPrefab;
 	public List<Transform> FindedFollowerPositions = new List<Transform>();
 	public SpriteRenderer[] GateRenderers;
 
@@ -91,11 +92,22 @@ public class StageNode : MonoBehaviour {
 		GameData.Instance.GetData(TargetStageName + StageController.StageFollowerDataTarget, ref followerData);
 		var count = followerData.FindedIndexList.Count;
 		followerCount += count;
-		for (int i = 0; i < count; i++) {
-			if(FindedFollowerPositions.Count <= i) break;
+		for (int i = 0; i < FindedFollowerPositions.Count; i++) {
 			var t = FindedFollowerPositions[i];
-			var f = Instantiate(FollowerModelPrefab, t.position, t.rotation);
-			f.transform.localScale = Vector3.one * 0.5f;
+			GameObject f;
+			if(i >= count) {
+				f = Instantiate(FollowerModelPrefab, t.position, t.rotation);
+				// 助けてなければ黒色にする
+				var rs = f.GetComponentsInChildren<Renderer>();
+				foreach(var item in rs) {
+					item.material.EnableKeyword("EMISSION");
+					item.material.SetColor("_EmissionColor", new Color(.25f, .25f, .25f));
+				}
+			}
+			else {
+				f = Instantiate(FollowerChipPrefab, t.position, t.rotation);
+			}
+			f.transform.localScale = Vector3.one * 0.75f;
 		}
 
 
