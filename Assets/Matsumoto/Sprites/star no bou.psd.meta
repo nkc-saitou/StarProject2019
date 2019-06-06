@@ -4,6 +4,8 @@ TextureImporter:
   fileIDToRecycleName:
     21300000: HalfPoint_0
     21300002: HalfPoint_1
+    21300004: star no bou_0
+    21300006: star no bou_1
   externalObjects: {}
   serializedVersion: 7
   mipmaps:
@@ -97,7 +99,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: HalfPoint_0
+      name: star no bou_0
       rect:
         serializedVersion: 2
         x: 0
@@ -105,19 +107,19 @@ TextureImporter:
         width: 256
         height: 256
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: bfb6fcba9fb05c5499e617f06c32ec1f
+      spriteID: c3bb9c024022f4946816a16bc03ceb4c
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HalfPoint_1
+      name: star no bou_1
       rect:
         serializedVersion: 2
         x: 256
@@ -125,13 +127,13 @@ TextureImporter:
         width: 256
         height: 256
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 83ebb9dc69e8b9848a9e1c3d96227037
+      spriteID: 96618c6f88c3add4e903e9fcb958b3ed
       vertices: []
       indices: 
       edges: []
