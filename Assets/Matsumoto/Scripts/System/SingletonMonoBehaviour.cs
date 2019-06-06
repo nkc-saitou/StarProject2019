@@ -33,5 +33,8 @@ public abstract class SingletonMonoBehaviour<T> : MonoBehaviour where T : MonoBe
 
 	private void Awake() {
 		if(_instance) Destroy(gameObject);
+		else {
+			_instance = GetComponent<T>();
+		}
 	}
 }
