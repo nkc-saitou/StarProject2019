@@ -58,12 +58,11 @@ namespace Matsumoto.Gimmick {
 				var follower = Instantiate(PlayerFollowerPrefab, transform.position, transform.rotation);
 				follower.Target = player;
 
-				Controller.FollowerData.FindedIndexList
-					.Add(FollowerIndex);
+				Controller.AddFollowerData(FollowerIndex);
 
 				AudioManager.PlaySE("GetFollower", position: transform.position);
 
-				var g = Instantiate(GetFollowerEffectPrefab, transform.position, transform.rotation);;
+				var g = Instantiate(GetFollowerEffectPrefab, transform.position, transform.rotation);
 				Destroy(g, 5.0f);
 				Destroy(gameObject);
 			}
