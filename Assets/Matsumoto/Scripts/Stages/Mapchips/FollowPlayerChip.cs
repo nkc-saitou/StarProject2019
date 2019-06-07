@@ -23,6 +23,11 @@ namespace Matsumoto.Gimmick {
 		public override void GimmickStart() {
 			base.GimmickStart();
 
+			Debug.Log("_" + FollowerIndex);
+			foreach(var item in Controller.FollowerData.FindedIndexList) {
+				Debug.Log(item);
+			}
+
 			if(Controller.FollowerData.FindedIndexList
 				.Exists(x => x == FollowerIndex)) {
 				Destroy(gameObject);
