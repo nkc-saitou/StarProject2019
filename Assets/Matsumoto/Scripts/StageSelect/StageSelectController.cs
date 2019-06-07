@@ -112,6 +112,13 @@ public class StageSelectController : MonoBehaviour {
 			}
 		}
 
+		if(Input.GetKeyDown(KeyCode.P) && !_isSceneMoving) {
+			_isSceneMoving = true;
+			GameData.Instance.DeleteDataAll();
+			GameData.Instance.Save();
+			SceneChanger.Instance.MoveScene("StageSelect", 0.2f, 0.2f, SceneChangeType.BlackFade);
+		}
+
 		if(p == Position) {
 			_currentSelectedStage = _targetStage;
 			_currentSelectedStage.IsSelected = true;
