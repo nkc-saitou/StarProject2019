@@ -114,6 +114,7 @@ public class StageSelectController : MonoBehaviour {
 
 		if(Input.GetKeyDown(KeyCode.P) && !_isSceneMoving) {
 			_isSceneMoving = true;
+			_lastSelectedStageIndex = 0;
 			GameData.Instance.DeleteDataAll();
 			GameData.Instance.Save();
 			SceneChanger.Instance.MoveScene("StageSelect", 0.2f, 0.2f, SceneChangeType.BlackFade);
