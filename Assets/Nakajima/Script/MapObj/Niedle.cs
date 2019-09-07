@@ -3,18 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using Matsumoto.Gimmick;
 
+/// <summary>
+/// 障害物クラス
+/// </summary>
 public class Niedle : GimmickChip
 {
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
-
     /// <summary>
     /// 当たり判定
     /// </summary>

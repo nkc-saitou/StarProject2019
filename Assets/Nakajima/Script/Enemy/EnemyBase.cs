@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Enemy基底クラス
+/// </summary>
 public class EnemyBase : MonoBehaviour
 {
     // ターゲット

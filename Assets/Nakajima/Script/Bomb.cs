@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 爆発オブジェクトクラス
+/// </summary>
 public class Bomb : MonoBehaviour
 {
     // ターゲット
@@ -11,8 +14,11 @@ public class Bomb : MonoBehaviour
     [SerializeField]
     private float explosionRange;
 
-	// Use this for initialization
+	/// <summary>
+    /// 初期化
+    /// </summary>
 	void Start () {
+        // 音声再生
         Matsumoto.Audio.AudioManager.PlaySE("Explosion", position: transform.position);
 
         // ターゲットの設定
@@ -21,15 +27,10 @@ public class Bomb : MonoBehaviour
 
         // 距離を測る
         float distance =  CheckDistance(targetObj.transform.position);
-
+        // 爆発の範囲内のプレイヤーにダメージを与える
         if(distance <= explosionRange) {
             player.ApplyDamage(gameObject, DamageType.Gimmick);
         }
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
 	}
 
     /// <summary>

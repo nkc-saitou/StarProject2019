@@ -7,7 +7,7 @@ using UnityEngine;
 /// </summary>
 public class HidingEnemy : EnemyBase, IEnemy
 {
-    // 自身のSpriteRenderer
+    // 自身のMaterial
     private Material myMaterial;
 
     // 爆破用エフェクト
@@ -19,7 +19,9 @@ public class HidingEnemy : EnemyBase, IEnemy
     // 透過処理
     float alpha = 0.0f;
 
-    // Use this for initialization
+    /// <summary>
+    /// 初期化
+    /// </summary>
     void Start()
     {
         target = GameObject.Find("Player");
@@ -28,7 +30,9 @@ public class HidingEnemy : EnemyBase, IEnemy
         canAction = true;
     }
 
-    // Update is called once per frame
+    /// <summary>
+    /// 更新処理
+    /// </summary>
     void Update()
     {
         CheckAction();
@@ -93,6 +97,7 @@ public class HidingEnemy : EnemyBase, IEnemy
         var explosionPos = new Vector3(transform.position.x, transform.position.y, -1.0f);
         Instantiate(bombEffect, explosionPos, transform.rotation);
 
+        // 爆発後は消滅
         Destroy(gameObject);
     }
 
@@ -103,12 +108,16 @@ public class HidingEnemy : EnemyBase, IEnemy
     /// <returns></returns>
     protected override IEnumerator IntervalAction(float _interval)
     {
+        // アクション状態を切る
         canAction = false;
 
+        // 点滅処理
         StartCoroutine(ExplosionLight());
 
+        // インターバル分待機
         yield return new WaitForSeconds(_interval);
 
+        // 待機後にアクションを行う
         Action();
     }
 
@@ -117,6 +126,7 @@ public class HidingEnemy : EnemyBase, IEnemy
     /// </summary>
     public void ApplyDamage()
     {
+        // 攻撃を受けたら消滅
         Destroy(gameObject);
     }
 

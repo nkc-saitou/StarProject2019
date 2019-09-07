@@ -12,7 +12,9 @@ public class PressEnemy : EnemyBase, IEnemy
     // 移動に使う変数
     float time = 0.0f;
 
-    // Use this for initialization
+    /// <summary>
+    /// 初期化
+    /// </summary>
     void Start () {
         target = GameObject.Find("Player");
         myRig = GetComponent<Rigidbody2D>();
@@ -20,7 +22,9 @@ public class PressEnemy : EnemyBase, IEnemy
         canAction = true;
     }
 	
-	// Update is called once per frame
+	/// <summary>
+    /// 更新処理
+    /// </summary>
 	void Update () {
         CheckAction();
 

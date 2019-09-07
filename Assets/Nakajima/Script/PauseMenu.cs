@@ -4,6 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// ポーズメニュークラス
+/// </summary>
 public class PauseMenu : MonoBehaviour
 {
     // 現在のステート
@@ -35,16 +38,16 @@ public class PauseMenu : MonoBehaviour
     Vector2 inputVec;
     // 押し続けた時間
     private float axisTime; 
-    
-	void Start () {
-    }
 	
+    /// <summary>
+    /// 更新処理
+    /// </summary>
 	void Update () {
         MenuSelect();
 	}
 
     /// <summary>
-    /// 表示にされたとき
+    /// 表示されたとき
     /// </summary>
     void OnEnable()
     {
@@ -57,6 +60,7 @@ public class PauseMenu : MonoBehaviour
     {
         MenuSound();
     }
+
     /// <summary>
     /// メニュー表示、非表示音
     /// </summary>
@@ -92,6 +96,7 @@ public class PauseMenu : MonoBehaviour
         if (inputVec.x < 0.0f && axisTime == 0.0f || inputVec.x < 0.0f && axisTime > 0.25f) VolumeChange(menuState, -0.1f);
         if (inputVec.x > 0.0f && axisTime == 0.0f || inputVec.x > 0.0f && axisTime > 0.25f) VolumeChange(menuState, 0.1f);
 
+        // メニューのハイライト
         SetPosition();
     }
 
@@ -108,6 +113,7 @@ public class PauseMenu : MonoBehaviour
         if (inputVec.x < 0.0f && axisTime == 0.0f || inputVec.x < 0.0f && axisTime > 0.25f) VolumeChange(menuState, -0.1f);
         if (inputVec.x > 0.0f && axisTime == 0.0f || inputVec.x > 0.0f && axisTime > 0.25f) VolumeChange(menuState, 0.1f);
 
+        // メニューのハイライト
         SetPosition();
     }
 
@@ -120,6 +126,7 @@ public class PauseMenu : MonoBehaviour
         if (inputVec.y > 0.0f && axisTime == 0.0f) menuState -= 1;
         if (inputVec.x > 0.0f && axisTime == 0.0f) menuState += 1;
 
+        // メニューのハイライト
         SetPosition();
 
         // ステージセレクト
@@ -135,13 +142,16 @@ public class PauseMenu : MonoBehaviour
         if (inputVec.y > 0.0f && axisTime == 0.0f) menuState -= 2;
         if (inputVec.x < 0.0f && axisTime == 0.0f) menuState -= 1;
 
+        // メニューのハイライト
         SetPosition();
 
         // リトライ
         if (Input.GetButtonDown("Attack")) SceneChange(menuState);
     }
 
-    // メニューの操作
+    /// <summary>
+    /// メニュー画面操作
+    /// </summary>
     private void MenuSelect()
     {
         // 入力値を格納
@@ -183,6 +193,7 @@ public class PauseMenu : MonoBehaviour
         var time = axisTime;
         time += Time.unscaledDeltaTime;
 
+        // 入力時間を返す
         return time;
     }
 
@@ -205,15 +216,18 @@ public class PauseMenu : MonoBehaviour
         // シーン遷移中はポーズ不可
         stageCon.CanPause = false;
 
+        // 音声の再生位置はプレイヤーの位置
         var SoundPos = FindObjectOfType<Matsumoto.Character.Player>().transform.position;
         Matsumoto.Audio.AudioManager.PlaySE("MenuSelect_3", position: SoundPos);
 
         // ステートごとにシーン遷移
         switch (_currentState)
         {
+            // ステージセレクトへ
             case MenuState.STAGESELECT:
                 SceneChanger.Instance.MoveScene("StageSelect", 0.2f, 0.2f, SceneChangeType.StarBlackFade);
                 break;
+            // リトライ
             case MenuState.RETRY:
                 var sceneName = SceneManager.GetActiveScene().name;
                 SceneChanger.Instance.MoveScene(sceneName, 0.2f, 0.2f, SceneChangeType.BlackFade);
@@ -239,9 +253,11 @@ public class PauseMenu : MonoBehaviour
         // ステートに合わせて音量調整
         switch (_currentState)
         {
+            // BGMVolumeの更新
             case MenuState.BGM:
                 Matsumoto.Audio.AudioManager.SetBGMVolume(volumeSlider[(int)_currentState].value);
                 break;
+            // SEVolumeの更新
             case MenuState.SE:
                 Matsumoto.Audio.AudioManager.SetSEVolume(volumeSlider[(int)_currentState].value);
                 break;

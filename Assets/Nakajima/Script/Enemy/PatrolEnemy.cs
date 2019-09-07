@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 徘徊型Enemy
+/// </summary>
 public class PatrolEnemy : EnemyBase, IEnemy
 {
     // EnemyのRenderer
@@ -33,14 +36,17 @@ public class PatrolEnemy : EnemyBase, IEnemy
     [SerializeField]
     private ParticleSystem razerHit;
 
-    // 移動に使う変数
+    /* 移動に使う変数 */
+    // 移動方向
     [SerializeField]
     private Vector2 moveVec;
+    // 移動スピード
     [SerializeField]
     private float speed;
-    float time = 0.0f;
 
-    // Use this for initialization
+    /// <summary>
+    /// 初期化
+    /// </summary>
     void Start()
     {
         lineRen = GetComponent<LineRenderer>();
@@ -50,21 +56,26 @@ public class PatrolEnemy : EnemyBase, IEnemy
         canAction = true;
     }
 	
-	// Update is called once per frame
+	/// <summary>
+    /// 更新処理
+    /// </summary>
 	void Update () {
         // カメラに写っているか判定
         if (mySprite.isVisible) visible = true;
         else visible = false;
 
+        // アクションするかチェック
         CheckAction();
 
+        // カメラの描画範囲内なら地面までの領域を定義
         if (lineRen.enabled == true) SetLineRendererParam();
 
+        // 移動処理
         Move();
     }
 
     /// <summary>
-    /// 移動
+    /// 移動処理
     /// </summary>
     public void Move()
     {
@@ -111,11 +122,12 @@ public class PatrolEnemy : EnemyBase, IEnemy
             StartCoroutine(IntervalAction(2.0f));
         }
 
+        // LineRendererがアクティブであれば実行
         if (lineRen.enabled == true) {
             // プレイヤー判定
             RaycastHit2D playerHit = Physics2D.Raycast(transform.position, -transform.up, 500.0f, playerLayer);
-            if (playerHit.collider != null)
-            {
+            // プレイヤーにヒットしたらダメージを与える
+            if (playerHit.collider != null) {
                 var player = playerHit.collider.gameObject.GetComponent<Matsumoto.Character.Player>();
                 if (player != null) player.ApplyDamage(gameObject, DamageType.Gimmick);
             }
@@ -152,6 +164,7 @@ public class PatrolEnemy : EnemyBase, IEnemy
     /// <returns></returns>
     protected override IEnumerator IntervalAction(float _interval)
     {
+        // インターバル分待機
         yield return new WaitForSeconds(_interval);
 
         // 描画されているLineRendererを非表示に変更
@@ -205,6 +218,7 @@ public class PatrolEnemy : EnemyBase, IEnemy
     /// </summary>
     public void ApplyDamage()
     {
+        // 攻撃を受けたら消滅
         Destroy(gameObject);
     }
 }

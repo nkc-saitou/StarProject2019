@@ -2,15 +2,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// 敵の持つインターフェイス
+/// <summary>
+/// Enemyインタフェース
+/// </summary>
 public interface IEnemy
 {
-    // 移動
+    /// <summary>
+    /// 移動処理
+    /// </summary>
     void Move();
 
-    // アクション(攻撃など)
+    /// <summary>
+    /// Enemyごとのアクション(攻撃処理など)
+    /// </summary>
     void Action();
 
-    // ダメージを受ける
+    /// <summary>
+    /// ダメージ処理
+    /// </summary>
     void ApplyDamage();
 }
