@@ -8,7 +8,7 @@ using UnityEngine;
 public class PatrolEnemy : EnemyBase, IEnemy
 {
     // EnemyのRenderer
-    [SerializeField]
+    [SerializeField, Header("<自身のSpriteRenderer>")]
     private SpriteRenderer mySprite;
     // カメラに範囲に存在するか
     private bool visible;
@@ -26,29 +26,22 @@ public class PatrolEnemy : EnemyBase, IEnemy
     private LineRenderer lineRen;
 
     // LineRendererの描画地点
-    [SerializeField]
+    [SerializeField, Header("<LineRendererの開始地点>")]
     private GameObject startObj;
     private Vector3 endPos;
 
     // レーザー用のパーティクル
-    [SerializeField]
+    [SerializeField, Header("<レーザーエフェクト>")]
     private ParticleSystem razerCore;
-    [SerializeField]
+    [SerializeField, Header("<レーザー着弾エフェクト>")]
     private ParticleSystem razerHit;
-
-    /* 移動に使う変数 */
-    // 移動方向
-    [SerializeField]
-    private Vector2 moveVec;
-    // 移動スピード
-    [SerializeField]
-    private float speed;
 
     /// <summary>
     /// 初期化
     /// </summary>
     void Start()
     {
+        // コンポーネントのセットアップ
         lineRen = GetComponent<LineRenderer>();
         lineRen.enabled = false;
         target = FindObjectOfType<Matsumoto.Character.Player>().gameObject;

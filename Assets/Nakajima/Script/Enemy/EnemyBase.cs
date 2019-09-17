@@ -14,12 +14,20 @@ public class EnemyBase : MonoBehaviour
     protected Rigidbody2D myRig;
 
     // アクションの範囲(攻撃範囲)
-    [SerializeField]
+    [SerializeField, Header("<攻撃範囲>")]
     protected float actionRange;
     // アクションを起こせるかどうか
     protected bool canAction;
     // プレイヤーとの距離
     protected float playerDis;
+
+    /* 移動に使う変数 */
+    // 移動方向
+    [SerializeField, Header("<移動方向>")]
+    protected Vector2 moveVec;
+    // 移動スピード
+    [SerializeField, Header("<移動スピード>")]
+    protected float speed;
 
     /// <summary>
     /// 目標との距離を返す

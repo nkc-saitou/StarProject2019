@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public class PauseMenu : MonoBehaviour
 {
-    // 現在のステート
+    // メニューステート
     public enum MenuState
     {
         BGM = 0,
@@ -17,25 +17,26 @@ public class PauseMenu : MonoBehaviour
         STAGESELECT,
         RETRY
     }
+    [Header("<現在のメニューステート>")]
     public MenuState menuState;
 
     // StageControllerのインスタンス
     private StageController stageCon;
 
     // 項目の位置
-    [SerializeField]
+    [SerializeField, Header("メニューの項目")]
     private GameObject[] menuList;
 
     // BGM,SEの音量調整用のSlider
-    [SerializeField]
+    [SerializeField, Header("<音量調整用Slider>")]
     private Slider[] volumeSlider; 
 
     // 選択項目イメージ
-    [SerializeField]
+    [SerializeField, Header("<ハイライト用Object>")]
     private GameObject selectImage;
 
     // 入力値
-    Vector2 inputVec;
+    private Vector2 inputVec;
     // 押し続けた時間
     private float axisTime; 
 	
@@ -82,6 +83,30 @@ public class PauseMenu : MonoBehaviour
     public void SetStageController(StageController _stageCon)
     {
         stageCon = _stageCon;
+        VolumeInitialize();
+    }
+
+    /// <summary>
+    /// キャンバスの初期化
+    /// </summary>
+    private void VolumeInitialize()
+    {
+        // それぞれのSliderのValueを初期化
+        for(int index = 0; index < volumeSlider.Length; index++) {
+            switch (index)
+            {
+                // BGM
+                case 0:
+                    volumeSlider[index].value = 1.0f;
+                    Matsumoto.Audio.AudioManager.SetBGMVolume(volumeSlider[index].value);
+                    break;
+                // SE
+                case 1:
+                    volumeSlider[index].value = 1.0f;
+                    Matsumoto.Audio.AudioManager.SetSEVolume(volumeSlider[index].value);
+                    break;
+            }
+        }
     }
 
     /// <summary>

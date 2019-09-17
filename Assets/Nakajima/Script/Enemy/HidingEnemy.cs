@@ -11,7 +11,7 @@ public class HidingEnemy : EnemyBase, IEnemy
     private Material myMaterial;
 
     // 爆破用エフェクト
-    [SerializeField]
+    [SerializeField, Header("<爆発エフェクト>")]
     private GameObject bombEffect;
 
     // 時間用

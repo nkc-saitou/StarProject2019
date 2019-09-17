@@ -11,7 +11,7 @@ public class Bomb : MonoBehaviour
     private GameObject targetObj;
 
     // 爆破範囲
-    [SerializeField]
+    [SerializeField, Header("爆発の範囲")]
     private float explosionRange;
 
 	/// <summary>
