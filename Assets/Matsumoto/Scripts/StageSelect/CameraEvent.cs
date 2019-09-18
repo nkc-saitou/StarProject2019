@@ -8,6 +8,7 @@ public class CameraEvent : MonoBehaviour, IStageMoveEvent {
 	public StageSelectController Controller;
 	public Vector3 MovePosition;
 	public float Speed = 10.0f;
+	public bool CanStateChange;
 
 	private Vector3? _startPosition;
 	private Camera _targetCamera;
@@ -51,7 +52,9 @@ public class CameraEvent : MonoBehaviour, IStageMoveEvent {
 		}
 
 		controller.IsFreeze = false;
-		controller.State = forward ? StageSelectState.Select : StageSelectState.Title;
+		if(CanStateChange) {
+			controller.State = forward ? StageSelectState.Select : StageSelectState.Title;
+		}
 	}
 
 	private void OnDrawGizmos() {
