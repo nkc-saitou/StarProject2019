@@ -29,7 +29,7 @@ public class PauseMenu : MonoBehaviour
 
     // BGM,SEの音量調整用のSlider
     [SerializeField, Header("<音量調整用Slider>")]
-    private Slider[] volumeSlider; 
+    private Slider[] volumeSlider;
 
     // 選択項目イメージ
     [SerializeField, Header("<ハイライト用Object>")]
@@ -38,14 +38,15 @@ public class PauseMenu : MonoBehaviour
     // 入力値
     private Vector2 inputVec;
     // 押し続けた時間
-    private float axisTime; 
-	
+    private float axisTime;
+
     /// <summary>
     /// 更新処理
     /// </summary>
-	void Update () {
+    void Update()
+    {
         MenuSelect();
-	}
+    }
 
     /// <summary>
     /// 表示されたとき
@@ -92,7 +93,8 @@ public class PauseMenu : MonoBehaviour
     private void VolumeInitialize()
     {
         // それぞれのSliderのValueを初期化
-        for(int index = 0; index < volumeSlider.Length; index++) {
+        for (int index = 0; index < volumeSlider.Length; index++)
+        {
             switch (index)
             {
                 // BGM
@@ -287,5 +289,5 @@ public class PauseMenu : MonoBehaviour
                 Matsumoto.Audio.AudioManager.SetSEVolume(volumeSlider[(int)_currentState].value);
                 break;
         }
-    } 
+    }
 }
