@@ -48,11 +48,12 @@ public class PatrolEnemy : EnemyBase, IEnemy
         originPos = transform.position;
         canAction = true;
     }
-	
-	/// <summary>
+
+    /// <summary>
     /// 更新処理
     /// </summary>
-	void Update () {
+    void Update()
+    {
         // カメラに写っているか判定
         if (mySprite.isVisible) visible = true;
         else visible = false;
@@ -106,26 +107,29 @@ public class PatrolEnemy : EnemyBase, IEnemy
         int playerLayer = LayerMask.GetMask("Player");
 
         // LineRendererをアクティブにする
-        if (lineRen.enabled == false && visible == true) {
+        if (lineRen.enabled == false && visible == true)
+        {
             // 音のなる位置を定義
             var SoundPos = new Vector3(transform.position.x, target.transform.position.y, 0.0f);
-            Matsumoto.Audio.AudioManager.PlaySE("Laser", position:SoundPos);
+            Matsumoto.Audio.AudioManager.PlaySE("Laser", position: SoundPos);
 
             SetLineRenderer(lineRen.enabled);
             StartCoroutine(IntervalAction(2.0f));
         }
 
         // LineRendererがアクティブであれば実行
-        if (lineRen.enabled == true) {
+        if (lineRen.enabled == true)
+        {
             // プレイヤー判定
             RaycastHit2D playerHit = Physics2D.Raycast(transform.position, -transform.up, 500.0f, playerLayer);
             // プレイヤーにヒットしたらダメージを与える
-            if (playerHit.collider != null) {
+            if (playerHit.collider != null)
+            {
                 var player = playerHit.collider.gameObject.GetComponent<Matsumoto.Character.Player>();
                 if (player != null) player.ApplyDamage(gameObject, DamageType.Gimmick);
             }
         }
-        
+
     }
 
     /// <summary>
@@ -164,7 +168,8 @@ public class PatrolEnemy : EnemyBase, IEnemy
         if (lineRen.enabled == true) SetLineRenderer(lineRen.enabled);
 
         // 次のアクションまでのインターバルを設ける
-        if (canAction == true) {
+        if (canAction == true)
+        {
             canAction = false;
             StartCoroutine(IntervalAction(1.0f));
         }
@@ -178,12 +183,14 @@ public class PatrolEnemy : EnemyBase, IEnemy
     private void SetLineRenderer(bool enabled)
     {
         // エフェクトの停止
-        if (enabled) {
+        if (enabled)
+        {
             razerCore.gameObject.SetActive(!enabled);
             razerHit.Stop();
         }
         // エフェクトの再生
-        else {
+        else
+        {
             razerCore.gameObject.SetActive(!enabled);
             razerHit.Play();
         }

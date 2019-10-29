@@ -16,8 +16,6 @@ public class HidingEnemy : EnemyBase, IEnemy
 
     // 時間用
     float time = 0.0f;
-    // 透過処理
-    float alpha = 0.0f;
 
     /// <summary>
     /// 初期化
@@ -68,9 +66,10 @@ public class HidingEnemy : EnemyBase, IEnemy
     IEnumerator ExplosionLight()
     {
         time = 0.0f;
-        
+
         // 赤色に変更
-        while (time < 0.05f) {
+        while (time < 0.05f)
+        {
             time += Time.deltaTime;
             myMaterial.SetVector("_FluidColor", new Vector4(1.0f, 0.0f, 0.0f, 0.0f));
             yield return null;
@@ -79,7 +78,8 @@ public class HidingEnemy : EnemyBase, IEnemy
         time = 0.0f;
 
         // 黒色に変更
-        while (time < 0.05f) {
+        while (time < 0.05f)
+        {
             time += Time.deltaTime;
             myMaterial.SetVector("_FluidColor", new Vector4(0.0f, 0.0f, 0.0f, 0.0f));
             yield return null;
